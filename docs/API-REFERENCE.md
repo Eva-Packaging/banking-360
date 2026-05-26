@@ -541,23 +541,37 @@ GET /transactions/account/{accountId}
 ### Path Parameters
 
 | Name      | Required | Example    |
-| --------- | -------: | ---------- |
+|-----------|---------:|------------|
 | accountId |      Yes | `acc_2001` |
+
+### Query Parameters
+
+| Name   | Required | Example     | Description      |
+|--------|---------:|-------------|------------------|
+| page   |       No | `0`         | Page number      |
+| size   |       No | `10`        | Page size        |
+| status |       No | `COMPLETED` | Filter by status |
 
 ### Success Response — `200 OK`
 
 ```json
-[
-  {
-    "transactionId": "txn_3001",
-    "accountId": "acc_2001",
-    "amount": 100.00,
-    "transactionType": "TRANSFER_OUT",
-    "status": "COMPLETED",
-    "description": "Move money to savings",
-    "createdAt": "2026-05-25T10:50:00Z"
-  }
-]
+{
+  "content": [
+    {
+      "transactionId": "txn_3001",
+      "accountId": "acc_2001",
+      "amount": 100.00,
+      "transactionType": "TRANSFER_OUT",
+      "status": "COMPLETED",
+      "description": "Move money to savings",
+      "createdAt": "2026-05-25T10:50:00Z"
+    }
+  ],
+  "page": 0,
+  "size": 10,
+  "totalElements": 1,
+  "totalPages": 1
+}
 ```
 
 ### Possible Errors
@@ -648,6 +662,7 @@ GET /api/notifications/my?unreadOnly=true
     "notificationId": "noti_4001",
     "customerId": "usr_1001",
     "type": "TRANSFER_SUCCESS",
+    "title": "Transfer Successful",
     "message": "Your transfer of $100.00 was completed successfully.",
     "status": "UNREAD",
     "createdAt": "2026-05-25T10:50:05Z",
@@ -787,6 +802,66 @@ PATCH /accounts/{accountId}/status
   "message": "Invalid account status",
   "path": "/api/accounts/acc_2001/status",
   "timestamp": "2026-05-25T11:06:00Z"
+}
+```
+
+---
+
+## 6.3 Admin Get All Transactions
+
+Admin-only endpoint. Returns all transactions across all customers.
+
+```http
+GET /transactions/admin
+```
+
+### Query Parameters
+
+| Name       | Required | Example     | Description        |
+| ---------- | -------: | ----------- | ------------------ |
+| customerId |       No | `usr_1001`  | Filter by customer |
+| status     |       No | `COMPLETED` | Filter by status   |
+| page       |       No | `0`         | Page number        |
+| size       |       No | `10`        | Page size          |
+
+### Example Request
+
+```http
+GET /api/transactions/admin?status=COMPLETED&page=0&size=10
+```
+
+### Success Response — `200 OK`
+
+```json
+{
+  "content": [
+    {
+      "transactionId": "txn_3001",
+      "customerId": "usr_1001",
+      "fromAccountId": "acc_2001",
+      "toAccountId": "acc_2002",
+      "amount": 100.00,
+      "transactionType": "TRANSFER",
+      "status": "COMPLETED",
+      "createdAt": "2026-05-25T10:50:00Z"
+    }
+  ],
+  "page": 0,
+  "size": 10,
+  "totalElements": 1,
+  "totalPages": 1
+}
+```
+
+### Possible Errors
+
+```json
+{
+  "status": 403,
+  "error": "FORBIDDEN",
+  "message": "Only admins can view all transactions",
+  "path": "/api/transactions/admin",
+  "timestamp": "2026-05-25T11:07:00Z"
 }
 ```
 

@@ -613,6 +613,13 @@ Frontend can view transaction history
 Frontend can view notifications
 ```
 
+Optional — Developer 2, only if customer flows are complete:
+
+```text
+Admin dashboard — view customers, manage account status
+Requires GET /api/transactions/admin in Transaction Service (see API Reference §6.3)
+```
+
 ---
 
 # Day 7 — Validation, Error Handling, and Polish

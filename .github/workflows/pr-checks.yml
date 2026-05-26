@@ -1,0 +1,26 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  validate-pr-title:
+    name: Validate PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title format
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          # Accepted formats (case-insensitive, anywhere in the title):
+          #   B3-123   B3 123   b3-123   b3 123
+          if echo "$PR_TITLE" | grep -qiE 'b3[-[:space:]][0-9]+'; then
+            echo "PR title is valid: $PR_TITLE"
+          else
+            echo "ERROR: PR title must contain a B3 ticket reference."
+            echo "Accepted formats (anywhere in the title, case-insensitive):"
+            echo "  B3-123   B3 123   b3-123   b3 123"
+            echo "Got: $PR_TITLE"
+            exit 1
+          fi

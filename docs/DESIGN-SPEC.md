@@ -166,12 +166,14 @@ Filters:
 * Transaction type
 * Date range
 
-Transaction types:
+Transaction types (frontend display values derived from entry direction):
 
-* DEPOSIT
-* WITHDRAWAL
 * TRANSFER_IN
 * TRANSFER_OUT
+* DEPOSIT
+* WITHDRAWAL
+
+Note: The database stores `TRANSFER` as the `transaction_type`. The frontend derives direction (`TRANSFER_IN` / `TRANSFER_OUT`) from the associated `transaction_entries` record for the customer's account.
 
 ---
 
@@ -197,12 +199,17 @@ Responsibilities:
 
 ### 7. Admin Dashboard
 
+**Scope: Should Have — not MVP critical**
+
 Admin can:
 
 * View all customers
 * Create accounts for customers
-* View system transactions
-* View simple activity charts
+* View and manage account status
+
+Assigned to: Developer 2 (Day 6 integration work, if time allows after customer flows are complete)
+
+Note: Admin transaction view requires `GET /api/transactions/admin` (admin-scoped endpoint). See API Reference Section 6.3.
 
 ---
 
@@ -226,9 +233,6 @@ Optional but useful:
 discovery-service
 config-service
 ```
-
-For a 2-week junior project, I would skip config-service unless the team is comfortable.
-
 ---
 
 # 5. Microservice Responsibilities
@@ -380,13 +384,25 @@ AdminAccountController
 
 ### Example APIs
 
+Gateway-exposed (public):
+
 ```http
-POST /api/accounts
-GET  /api/accounts/customer/{customerId}
-GET  /api/accounts/{accountId}
-GET  /api/accounts/summary/{customerId}
-PATCH /api/accounts/{accountId}/balance
+POST  /api/accounts
+GET   /api/accounts/my
+GET   /api/accounts/{accountId}
+GET   /api/accounts/summary
+GET   /api/accounts
+PATCH /api/accounts/{accountId}/status
 ```
+
+Internal service-to-service (not exposed at gateway):
+
+```http
+GET   /internal/accounts/{accountId}
+PATCH /internal/accounts/{accountId}/balance
+```
+
+Transaction Service calls the internal endpoints to validate account ownership and update balances after a successful transfer.
 
 ---
 
@@ -500,7 +516,7 @@ exception
 ### Example APIs
 
 ```http
-GET /api/notifications/customer/{customerId}
+GET   /api/notifications/my
 PATCH /api/notifications/{notificationId}/read
 ```
 
@@ -720,6 +736,7 @@ Important:
 
 ```text
 transactions
+transaction_entries
 ```
 
 ### transactions
@@ -727,15 +744,29 @@ transactions
 ```text
 id
 customer_id
-from_account_id
-to_account_id
-amount
+transaction_reference
 transaction_type
 status
+amount
 description
+failure_reason
 created_at
 updated_at
 ```
+
+### transaction_entries
+
+```text
+id
+transaction_id
+account_id
+entry_type
+amount
+balance_after
+created_at
+```
+
+One transfer creates one `transactions` row and two `transaction_entries` rows — a DEBIT from the source account and a CREDIT to the destination. `from_account_id` and `to_account_id` are not stored on the transaction directly; they are derived from the entries.
 
 ---
 
@@ -986,7 +1017,24 @@ Can:
 * View all customers
 * Create accounts
 * View all accounts
-* View all transactions
+* View all transactions (requires `GET /api/transactions/admin` — see API Reference §6.3)
+
+---
+
+# 13.3 Service-to-Service Communication
+
+Transaction Service calls Account Service directly (not through the gateway) to validate accounts and update balances during a transfer.
+
+These internal calls use a shared internal JWT secret or a service identity header — not the customer's JWT. For MVP, forwarding the customer JWT to internal endpoints is acceptable. Document the chosen approach in each service's `application.yml`.
+
+Internal Account Service endpoints:
+
+```text
+GET   /internal/accounts/{accountId}   — validate ownership and status
+PATCH /internal/accounts/{accountId}/balance — update balance after transfer
+```
+
+These endpoints must be excluded from gateway routing and should only accept requests from within the Docker network.
 
 ---
 

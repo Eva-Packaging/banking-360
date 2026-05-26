@@ -856,8 +856,9 @@ READ
 TRANSFER_SUCCESS
 TRANSFER_FAILED
 ACCOUNT_CREATED
-ACCOUNT_LOCKED
 ```
+
+Note: `ACCOUNT_LOCKED` is excluded from MVP scope. No Kafka event is defined for account status changes. Add only if an `account-events` topic is introduced in a future iteration.
 
 ---
 
@@ -875,11 +876,13 @@ transaction_entries
 notifications
 ```
 
-Add these if time allows:
+**Out of MVP scope** — do not include in backlog stories or acceptance criteria:
 
 ```text
 account_audit_logs
 notification_delivery_logs
 ```
+
+These tables have no assigned tasks in the 10-day roadmap. Exclude them from story task lists and acceptance criteria.
 
 This keeps the project simple enough for junior developers while still showing a clean, normalized, banking-style database design.

@@ -1,0 +1,1512 @@
+{
+  "project": {
+    "name": "Banking 360",
+    "key": "B3",
+    "description": "A simplified banking-style full-stack platform built by 4 junior full-stack Java developers in 2 weeks. Demonstrates microservices with Spring Boot, React frontend, PostgreSQL, Redis, Kafka, Docker, Jenkins, AWS, Zipkin, and Grafana."
+  },
+  "epics": [
+    {
+      "summary": "Project Foundation & Infrastructure Setup",
+      "description": "Scaffold all backend services, the React frontend, and local Docker Compose infrastructure so the team has a working development environment from Day 1.",
+      "labels": ["foundation", "infrastructure", "setup"],
+      "priority": "High",
+      "userType": "operations engineer",
+      "functionality": "initialize all service skeletons and run the full local infrastructure stack",
+      "benefit": "every developer can start feature work immediately without environment blockers",
+      "stories": [
+        {
+          "summary": "Initialize Spring Boot service skeletons",
+          "description": "Create Spring Boot projects for all 5 backend services: <api-gateway>, <user-service>, <account-service>, <transaction-service>, <notification-service>.\n\nEach service must include:\n- Spring Web\n- Spring Data JPA\n- Spring Security\n- PostgreSQL Driver\n- Validation\n- Lombok\n- Spring Boot Actuator\n- Micrometer Prometheus\n- Micrometer Tracing\n\nEach service must expose:\n```\nGET /actuator/health\nGET /actuator/prometheus\n```\n\nFollow the layered package structure per service:\n```\ncom.bank.<servicename>\n  controller\n  service\n  repository\n  entity\n  dto\n  mapper\n  exception\n  config\n```",
+          "labels": ["foundation", "backend", "dev-all"],
+          "priority": "High",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "All services start without errors",
+              "given": "all 5 Spring Boot services are initialized with required dependencies",
+              "when": "each service is started locally",
+              "then": "the service starts on its configured port and returns 200 from /actuator/health"
+            },
+            {
+              "scenario": "Package structure is consistent across services",
+              "given": "a Spring Boot service has been scaffolded",
+              "when": "a developer navigates the source tree",
+              "then": "controller, service, repository, entity, dto, exception, and config packages are present"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Generate api-gateway project",
+              "description": "Create <api-gateway> using Spring Initializr with Spring Cloud Gateway, Spring Security, Redis, Actuator, and Micrometer Tracing dependencies."
+            },
+            {
+              "summary": "Generate user-service project",
+              "description": "Create <user-service> with Spring Web, JPA, Security, PostgreSQL Driver, Validation, Lombok, Actuator, and Micrometer."
+            },
+            {
+              "summary": "Generate account-service project",
+              "description": "Create <account-service> with Spring Web, JPA, Security, Redis, PostgreSQL Driver, Validation, Lombok, Actuator, and Micrometer."
+            },
+            {
+              "summary": "Generate transaction-service project",
+              "description": "Create <transaction-service> with Spring Web, JPA, Security, Kafka, PostgreSQL Driver, Validation, Lombok, Actuator, and Micrometer."
+            },
+            {
+              "summary": "Generate notification-service project",
+              "description": "Create <notification-service> with Spring Web, JPA, Kafka, PostgreSQL Driver, Validation, Lombok, Actuator, and Micrometer."
+            },
+            {
+              "summary": "Add layered package structure to each service",
+              "description": "Create controller, service, repository, entity, dto, mapper, exception, and config packages in each of the 5 service directories."
+            }
+          ]
+        },
+        {
+          "summary": "Initialize React frontend scaffold",
+          "description": "Create the React frontend application using Vite in <frontend/>.\n\nRequired libraries:\n- React + TypeScript\n- React Router\n- Axios\n- Tailwind CSS\n- React Hook Form\n- Zod\n- Recharts\n\nRequired folder structure:\n```\nfrontend/src/\n  api/\n  components/\n  features/\n    auth/\n    dashboard/\n    accounts/\n    transactions/\n    notifications/\n  layouts/\n  routes/\n  types/\n  utils/\n```\n\nSet up a shared Axios client in <frontend/src/api/axiosClient.ts> with base URL pointing to the API Gateway and an interceptor that attaches the JWT from localStorage.",
+          "labels": ["foundation", "frontend", "dev-1"],
+          "priority": "High",
+          "storyPoints": 3,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Frontend starts successfully",
+              "given": "the frontend project is initialized with all dependencies installed",
+              "when": "npm run dev is executed",
+              "then": "the app is accessible at http://localhost:5173 without errors"
+            },
+            {
+              "scenario": "Axios client attaches JWT to secured requests",
+              "given": "a JWT token is stored in localStorage",
+              "when": "a secured API request is made via the shared Axios client",
+              "then": "the Authorization: Bearer <token> header is automatically included"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Scaffold React app with Vite",
+              "description": "Run Vite scaffolding for a React TypeScript template in <frontend/> and install all required dependencies."
+            },
+            {
+              "summary": "Configure Tailwind CSS",
+              "description": "Install and configure Tailwind CSS in <frontend/tailwind.config.ts> and <frontend/src/index.css>."
+            },
+            {
+              "summary": "Create shared Axios client",
+              "description": "Create <frontend/src/api/axiosClient.ts> with base URL, JWT request interceptor, and 401 response redirect handler."
+            },
+            {
+              "summary": "Set up React Router with placeholder routes",
+              "description": "Create <frontend/src/routes/AppRouter.tsx> with placeholder routes for login, register, dashboard, accounts, transfer, transactions, and notifications."
+            }
+          ]
+        },
+        {
+          "summary": "Configure Docker Compose local infrastructure",
+          "description": "Create <docker-compose.yml> at the project root that runs all infrastructure and application containers.\n\nInfrastructure containers: postgres:16, redis:7, kafka, zookeeper, zipkin, prometheus, grafana.\n\nApplication containers: frontend, api-gateway, user-service, account-service, transaction-service, notification-service.\n\nLocal access URLs:\n```\nFrontend:    http://localhost:5173\nAPI Gateway: http://localhost:8080\nZipkin:      http://localhost:9411\nPrometheus:  http://localhost:9090\nGrafana:     http://localhost:3000\nPostgreSQL:  localhost:5432\nRedis:       localhost:6379\nKafka:       localhost:9092\n```",
+          "labels": ["foundation", "devops", "docker", "dev-4"],
+          "priority": "High",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Full infrastructure stack starts cleanly",
+              "given": "docker-compose.yml is configured",
+              "when": "docker compose up is executed",
+              "then": "postgres, redis, kafka, zookeeper, zipkin, prometheus, and grafana containers are all running and healthy"
+            },
+            {
+              "scenario": "Application services communicate within Docker network",
+              "given": "all application containers are running",
+              "when": "the api-gateway container routes a request to user-service",
+              "then": "the request resolves using the internal Docker network hostname without error"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Write docker-compose.yml with infrastructure containers",
+              "description": "Define postgres, redis, kafka, zookeeper, zipkin, prometheus, and grafana services in <docker-compose.yml> with correct port mappings and environment variables."
+            },
+            {
+              "summary": "Add application service definitions to Docker Compose",
+              "description": "Add build entries for api-gateway, user-service, account-service, transaction-service, notification-service, and frontend with depends_on and environment variable injection."
+            },
+            {
+              "summary": "Create Prometheus scrape configuration",
+              "description": "Create <devops/prometheus/prometheus.yml> with scrape targets for all 5 Spring Boot services on /actuator/prometheus."
+            },
+            {
+              "summary": "Create Dockerfile templates for backend services",
+              "description": "Create a multi-stage <Dockerfile> in each backend service directory using eclipse-temurin:21-jdk for the build stage and eclipse-temurin:21-jre for the runtime stage."
+            }
+          ]
+        },
+        {
+          "summary": "Configure API Gateway routing and CORS",
+          "description": "Implement route configuration in <api-gateway> to forward requests to backend services.\n\nRoutes:\n```\n/api/auth/**          -> user-service\n/api/users/**         -> user-service\n/api/accounts/**      -> account-service\n/api/transactions/**  -> transaction-service\n/api/notifications/** -> notification-service\n```\n\nGateway must handle CORS for requests originating from http://localhost:5173.",
+          "labels": ["foundation", "api-gateway", "dev-4"],
+          "priority": "High",
+          "storyPoints": 3,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Requests are routed to the correct service",
+              "given": "the api-gateway is running",
+              "when": "a request is made to /api/auth/register",
+              "then": "the gateway forwards the request to user-service"
+            },
+            {
+              "scenario": "CORS allows frontend requests",
+              "given": "the frontend is running at http://localhost:5173",
+              "when": "the frontend sends a cross-origin request to the gateway",
+              "then": "the response includes correct CORS headers and the browser does not block it"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Define route configuration in application.yml",
+              "description": "Configure all route predicates and URI targets in <api-gateway/src/main/resources/application.yml>."
+            },
+            {
+              "summary": "Configure global CORS",
+              "description": "Add CORS configuration in <api-gateway/src/main/java/com/bank/apigateway/config/CorsConfig.java> allowing localhost:5173 origin."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "summary": "User Authentication & Authorization",
+      "description": "Implement customer registration, login, JWT issuance, role-based authorization, and the corresponding React pages so customers and admins can securely access the platform.",
+      "labels": ["authentication", "user-service", "security", "jwt"],
+      "priority": "High",
+      "userType": "new user",
+      "functionality": "register an account and log in securely to receive a JWT token",
+      "benefit": "access protected banking features without re-entering credentials on every request",
+      "stories": [
+        {
+          "summary": "Implement customer registration API",
+          "description": "Create the registration endpoint in <user-service>.\n\nEndpoint:\n```\nPOST /api/auth/register\n```\n\nRequest body: firstName, lastName, email, password, phoneNumber.\n\nBusiness rules:\n- Email must be unique across the users table\n- Password must be hashed with BCrypt before persisting\n- New user is assigned the CUSTOMER role via the user_roles join table\n- User status defaults to ACTIVE\n\nSuccess response: 201 Created with userId, email, role, status, and createdAt.",
+          "labels": ["authentication", "user-service", "backend", "dev-1"],
+          "priority": "High",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Successful customer registration",
+              "given": "a valid registration request with a unique email",
+              "when": "POST /api/auth/register is called",
+              "then": "the user is persisted with a hashed password and CUSTOMER role, and a 201 response is returned"
+            },
+            {
+              "scenario": "Duplicate email is rejected",
+              "given": "an email that already exists in the users table",
+              "when": "POST /api/auth/register is called with that email",
+              "then": "a 409 Conflict response is returned with message 'Email already exists'"
+            },
+            {
+              "scenario": "Missing required field returns validation error",
+              "given": "a registration request with a missing required field",
+              "when": "POST /api/auth/register is called",
+              "then": "a 400 Bad Request response is returned with field-level validation error details"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Create User, Role, and UserRole entities",
+              "description": "Create JPA entities in <user-service/src/main/java/com/bank/userservice/entity/> for User, Role, and UserRole with correct column mappings and the many-to-many join table."
+            },
+            {
+              "summary": "Create UserRepository and RoleRepository",
+              "description": "Create Spring Data JPA repositories in <user-service/src/main/java/com/bank/userservice/repository/> with findByEmail and findByName query methods."
+            },
+            {
+              "summary": "Create RegisterRequest and UserResponse DTOs",
+              "description": "Create request and response DTOs with Bean Validation annotations in <user-service/src/main/java/com/bank/userservice/dto/>."
+            },
+            {
+              "summary": "Implement registration logic in UserService",
+              "description": "Implement email uniqueness check, BCrypt password hashing, CUSTOMER role assignment, and user persistence in <user-service/src/main/java/com/bank/userservice/service/UserService.java>."
+            },
+            {
+              "summary": "Implement AuthController POST /auth/register",
+              "description": "Create <user-service/src/main/java/com/bank/userservice/controller/AuthController.java> with the register endpoint mapped to the service layer."
+            },
+            {
+              "summary": "Add global exception handler",
+              "description": "Create <user-service/src/main/java/com/bank/userservice/exception/GlobalExceptionHandler.java> using @RestControllerAdvice to return the standard error response format."
+            }
+          ]
+        },
+        {
+          "summary": "Implement login and JWT generation",
+          "description": "Create the login endpoint and profile retrieval in <user-service>.\n\nEndpoints:\n```\nPOST /api/auth/login\nGET  /api/users/me\n```\n\nLogin validates email and password against the users table and returns a signed JWT containing userId and role.\n\nGET /api/users/me reads the JWT from the Authorization header and returns the authenticated user's profile.",
+          "labels": ["authentication", "jwt", "user-service", "backend", "dev-1"],
+          "priority": "High",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Successful login returns JWT",
+              "given": "a registered customer with a valid email and password",
+              "when": "POST /api/auth/login is called",
+              "then": "a 200 response is returned containing accessToken, tokenType Bearer, and expiresIn"
+            },
+            {
+              "scenario": "Invalid credentials are rejected",
+              "given": "an incorrect password for a registered email",
+              "when": "POST /api/auth/login is called",
+              "then": "a 401 Unauthorized response is returned"
+            },
+            {
+              "scenario": "Authenticated user retrieves own profile",
+              "given": "a valid JWT token in the Authorization header",
+              "when": "GET /api/users/me is called",
+              "then": "the user profile including userId, email, role, and status is returned"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Implement JWT utility class",
+              "description": "Create <user-service/src/main/java/com/bank/userservice/security/JwtUtil.java> to generate and validate JWT tokens signed with HS256."
+            },
+            {
+              "summary": "Implement login logic in AuthService",
+              "description": "Implement credential validation and JWT generation in <user-service/src/main/java/com/bank/userservice/service/AuthService.java>."
+            },
+            {
+              "summary": "Add POST /auth/login to AuthController",
+              "description": "Add the login endpoint to <user-service/src/main/java/com/bank/userservice/controller/AuthController.java>."
+            },
+            {
+              "summary": "Create UserController with GET /users/me",
+              "description": "Create <user-service/src/main/java/com/bank/userservice/controller/UserController.java> with the GET /api/users/me endpoint reading the user from the Spring Security context."
+            }
+          ]
+        },
+        {
+          "summary": "Configure Spring Security and role-based authorization",
+          "description": "Configure Spring Security in <user-service> to protect endpoints by role.\n\nRules:\n- POST /api/auth/register and POST /api/auth/login are public\n- GET /api/users/me requires CUSTOMER or ADMIN role\n- GET /api/users requires ADMIN role only\n\nJWT must be validated on each secured request via a custom filter extending OncePerRequestFilter.",
+          "labels": ["authentication", "security", "user-service", "backend", "dev-1"],
+          "priority": "High",
+          "storyPoints": 3,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Secured endpoint rejects missing token",
+              "given": "a request to GET /api/users/me with no Authorization header",
+              "when": "the request is received",
+              "then": "a 401 Unauthorized response is returned"
+            },
+            {
+              "scenario": "Admin-only endpoint rejects customer role",
+              "given": "a valid JWT token with role CUSTOMER",
+              "when": "GET /api/users is called",
+              "then": "a 403 Forbidden response is returned"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Create JWT authentication filter",
+              "description": "Create <user-service/src/main/java/com/bank/userservice/security/JwtAuthenticationFilter.java> extending OncePerRequestFilter to extract and validate the JWT on each request."
+            },
+            {
+              "summary": "Configure SecurityFilterChain",
+              "description": "Create <user-service/src/main/java/com/bank/userservice/config/SecurityConfig.java> with permit rules for public endpoints and role-based access for secured ones."
+            }
+          ]
+        },
+        {
+          "summary": "Implement JWT validation filter at API Gateway",
+          "description": "Add a JWT validation filter to <api-gateway> so all secured requests are authenticated before being forwarded to backend services.\n\nFilter behaviour:\n- Skip validation for /api/auth/register and /api/auth/login\n- Return 401 if the token is absent or invalid\n- Forward userId and role as downstream request headers:\n```\nX-User-Id: {userId}\nX-User-Role: {role}\n```",
+          "labels": ["authentication", "api-gateway", "security", "dev-4"],
+          "priority": "High",
+          "storyPoints": 3,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Valid token is forwarded with user context headers",
+              "given": "a request with a valid JWT token",
+              "when": "the request passes through the gateway",
+              "then": "the request is forwarded to the target service with X-User-Id and X-User-Role headers attached"
+            },
+            {
+              "scenario": "Missing token is rejected at the gateway",
+              "given": "a secured request with no Authorization header",
+              "when": "the request reaches the gateway",
+              "then": "the gateway returns 401 and does not forward the request"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Implement JWT gateway filter",
+              "description": "Create <api-gateway/src/main/java/com/bank/apigateway/filter/JwtAuthenticationFilter.java> as a GlobalFilter that validates the JWT and attaches X-User-Id and X-User-Role headers."
+            },
+            {
+              "summary": "Configure public route bypass list",
+              "description": "Define the excluded paths (/api/auth/register, /api/auth/login) in <api-gateway/src/main/resources/application.yml> so the filter skips them."
+            }
+          ]
+        },
+        {
+          "summary": "Build login and register React pages",
+          "description": "Create the Login and Register pages in <frontend/src/features/auth/>.\n\nLogin fields: email, password.\nRegister fields: firstName, lastName, email, password, phoneNumber.\n\nBoth pages use React Hook Form with Zod schema validation.\n\nOn successful login:\n- Store JWT in localStorage\n- Redirect CUSTOMER to /dashboard\n- Redirect ADMIN to /admin\n\nOn successful register: redirect to login with success message.",
+          "labels": ["authentication", "frontend", "react", "dev-1"],
+          "priority": "High",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Login form blocks empty submission",
+              "given": "the user submits the login form without entering an email",
+              "when": "the form submit button is clicked",
+              "then": "an inline validation error is shown and the API is not called"
+            },
+            {
+              "scenario": "Successful login stores token and redirects",
+              "given": "valid credentials are entered",
+              "when": "the login form is submitted",
+              "then": "the JWT is stored in localStorage and the user is redirected to /dashboard"
+            },
+            {
+              "scenario": "Invalid credentials show error message",
+              "given": "incorrect credentials are submitted",
+              "when": "the API returns 401",
+              "then": "a visible error message 'Invalid email or password' is displayed on the form"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Create Zod validation schemas for login and register",
+              "description": "Create <frontend/src/features/auth/schemas.ts> with Zod schemas for both forms including email format and password min-length rules."
+            },
+            {
+              "summary": "Build LoginPage component",
+              "description": "Create <frontend/src/features/auth/LoginPage.tsx> using React Hook Form with the Zod login schema, calling the auth API on submit."
+            },
+            {
+              "summary": "Build RegisterPage component",
+              "description": "Create <frontend/src/features/auth/RegisterPage.tsx> using React Hook Form with the Zod register schema."
+            },
+            {
+              "summary": "Create auth API client",
+              "description": "Create <frontend/src/api/authApi.ts> with login and register functions using the shared Axios client."
+            },
+            {
+              "summary": "Implement ProtectedRoute and AdminRoute wrappers",
+              "description": "Create <frontend/src/routes/ProtectedRoute.tsx> that redirects unauthenticated users to /login, and <frontend/src/routes/AdminRoute.tsx> that restricts access to ADMIN role."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "summary": "Account Management",
+      "description": "Implement account creation, account viewing, and a Redis-cached account summary so admins can create checking and savings accounts for customers and customers can view their balances on the dashboard.",
+      "labels": ["account-service", "accounts", "redis", "dashboard"],
+      "priority": "High",
+      "userType": "authenticated user",
+      "functionality": "view checking and savings account balances and a total account summary on the dashboard",
+      "benefit": "quickly understand their financial position without waiting for a slow database query on every page load",
+      "stories": [
+        {
+          "summary": "Implement admin create account API",
+          "description": "Create the account creation endpoint in <account-service>.\n\nEndpoint:\n```\nPOST /api/accounts\n```\n\nRequest fields: customerId, accountType (CHECKING or SAVINGS), initialBalance.\n\nBusiness rules:\n- Only ADMIN role can call this endpoint\n- initialBalance must not be negative\n- accountNumber must be unique and auto-generated\n- Account status defaults to ACTIVE\n\nSuccess response: 201 Created with accountId, accountNumber, accountType, balance, status, and createdAt.",
+          "labels": ["account-service", "backend", "dev-2"],
+          "priority": "High",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Admin creates checking account successfully",
+              "given": "an admin user and a valid customerId with a non-negative initialBalance",
+              "when": "POST /api/accounts is called",
+              "then": "a new CHECKING account is persisted and a 201 response is returned with accountId, accountNumber, balance, and status ACTIVE"
+            },
+            {
+              "scenario": "Negative initial balance is rejected",
+              "given": "a create account request with a negative initialBalance",
+              "when": "POST /api/accounts is called",
+              "then": "a 400 Bad Request response is returned"
+            },
+            {
+              "scenario": "CUSTOMER role is forbidden from creating accounts",
+              "given": "a JWT with CUSTOMER role",
+              "when": "POST /api/accounts is called",
+              "then": "a 403 Forbidden response is returned"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Create Account entity",
+              "description": "Create <account-service/src/main/java/com/bank/accountservice/entity/Account.java> with id, customerId, accountNumber, accountType, balance, status, createdAt, and updatedAt fields."
+            },
+            {
+              "summary": "Create AccountRepository",
+              "description": "Create <account-service/src/main/java/com/bank/accountservice/repository/AccountRepository.java> with findByCustomerId and existsByAccountNumber query methods."
+            },
+            {
+              "summary": "Implement account number generation in AccountService",
+              "description": "Add unique account number generation logic in <account-service/src/main/java/com/bank/accountservice/service/AccountService.java>."
+            },
+            {
+              "summary": "Create AdminAccountController with POST /api/accounts",
+              "description": "Create <account-service/src/main/java/com/bank/accountservice/controller/AdminAccountController.java> with the create endpoint secured to ADMIN role."
+            }
+          ]
+        },
+        {
+          "summary": "Implement customer account view APIs",
+          "description": "Create endpoints for customers to retrieve their own accounts in <account-service>.\n\nEndpoints:\n```\nGET /api/accounts/my\nGET /api/accounts/{accountId}\n```\n\nBoth endpoints read customerId from the X-User-Id header forwarded by the gateway.\n\nGET /api/accounts/{accountId} must verify the account belongs to the requesting customer before returning.",
+          "labels": ["account-service", "backend", "dev-2"],
+          "priority": "High",
+          "storyPoints": 3,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Customer retrieves own accounts",
+              "given": "a customer with two active accounts",
+              "when": "GET /api/accounts/my is called",
+              "then": "both accounts are returned with accountId, accountNumber, accountType, balance, and status"
+            },
+            {
+              "scenario": "Customer retrieves account by ID",
+              "given": "a valid accountId belonging to the requesting customer",
+              "when": "GET /api/accounts/{accountId} is called",
+              "then": "the account details are returned with a 200 response"
+            },
+            {
+              "scenario": "Account belonging to another customer is rejected",
+              "given": "an accountId belonging to a different customer",
+              "when": "GET /api/accounts/{accountId} is called",
+              "then": "a 403 Forbidden response is returned"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Create AccountResponse DTO",
+              "description": "Create <account-service/src/main/java/com/bank/accountservice/dto/AccountResponse.java> mapping Account entity fields for API responses."
+            },
+            {
+              "summary": "Implement getMyAccounts and getAccountById in AccountService",
+              "description": "Add customer-scoped retrieval methods with ownership validation in <account-service/src/main/java/com/bank/accountservice/service/AccountService.java>."
+            },
+            {
+              "summary": "Create AccountController with GET /accounts/my and GET /accounts/{accountId}",
+              "description": "Create <account-service/src/main/java/com/bank/accountservice/controller/AccountController.java> reading customerId from the X-User-Id request header."
+            }
+          ]
+        },
+        {
+          "summary": "Implement account summary with Redis cache",
+          "description": "Implement the account summary endpoint with Redis caching in <account-service>.\n\nEndpoint:\n```\nGET /api/accounts/summary\n```\n\nCache key:\n```\ncustomer:{customerId}:account-summary\n```\n\nCache logic:\n1. Check Redis for an existing summary\n2. On cache miss, query the accounts table and compute total balance\n3. Store result in Redis with a TTL\n4. Return the summary response\n\nThe cache must be evicted when Transaction Service calls the internal balance update endpoint.",
+          "labels": ["account-service", "redis", "caching", "backend", "dev-2"],
+          "priority": "High",
+          "storyPoints": 8,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Summary is returned from Redis on cache hit",
+              "given": "a cached summary exists for a customer",
+              "when": "GET /api/accounts/summary is called",
+              "then": "the response is returned from Redis with cached: true"
+            },
+            {
+              "scenario": "Summary is loaded from database on cache miss",
+              "given": "no cached summary exists for a customer",
+              "when": "GET /api/accounts/summary is called",
+              "then": "accounts are queried from PostgreSQL, total balance is computed, the result is stored in Redis, and the summary is returned"
+            },
+            {
+              "scenario": "Cache is evicted after a balance update",
+              "given": "a cached account summary in Redis",
+              "when": "Transaction Service calls PATCH /internal/accounts/{accountId}/balance",
+              "then": "the Redis key customer:{customerId}:account-summary is deleted"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Add Redis dependency and configuration",
+              "description": "Add spring-boot-starter-data-redis and configure the connection in <account-service/src/main/resources/application.yml>."
+            },
+            {
+              "summary": "Create AccountSummaryResponse DTO",
+              "description": "Create <account-service/src/main/java/com/bank/accountservice/dto/AccountSummaryResponse.java> with customerId, totalBalance, accounts list, and cached flag."
+            },
+            {
+              "summary": "Implement cache read, write, and eviction",
+              "description": "Create <account-service/src/main/java/com/bank/accountservice/cache/AccountSummaryCache.java> using RedisTemplate to get, set (with TTL), and delete the summary cache key."
+            },
+            {
+              "summary": "Add GET /accounts/summary to AccountController",
+              "description": "Add the getAccountSummary method to <account-service/src/main/java/com/bank/accountservice/controller/AccountController.java> using the cache layer."
+            },
+            {
+              "summary": "Create InternalAccountController with balance update endpoint",
+              "description": "Create <account-service/src/main/java/com/bank/accountservice/controller/InternalAccountController.java> with PATCH /internal/accounts/{accountId}/balance that updates the balance and evicts the Redis cache."
+            }
+          ]
+        },
+        {
+          "summary": "Build customer dashboard page",
+          "description": "Create the customer dashboard in <frontend/src/features/dashboard/>.\n\nDisplays:\n- Customer name\n- Total balance\n- CHECKING account balance\n- SAVINGS account balance\n- Recent transactions (latest 5)\n\nData source: GET /api/accounts/summary.\n\nThe page must show a loading spinner during fetch and a friendly error message on API failure.",
+          "labels": ["frontend", "dashboard", "react", "dev-2"],
+          "priority": "High",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Dashboard renders account summary correctly",
+              "given": "a logged-in customer with one CHECKING and one SAVINGS account",
+              "when": "the dashboard page loads",
+              "then": "the total balance and individual account balances are displayed correctly"
+            },
+            {
+              "scenario": "Dashboard shows loading state during fetch",
+              "given": "the GET /api/accounts/summary API call is in progress",
+              "when": "the dashboard is rendered",
+              "then": "a loading spinner or skeleton is visible until the response arrives"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Create account API client",
+              "description": "Create <frontend/src/api/accountApi.ts> with getAccountSummary and getMyAccounts functions."
+            },
+            {
+              "summary": "Build DashboardPage component",
+              "description": "Create <frontend/src/features/dashboard/DashboardPage.tsx> with account summary cards and a recent transactions section."
+            },
+            {
+              "summary": "Create AccountSummaryCard component",
+              "description": "Create <frontend/src/components/AccountSummaryCard.tsx> displaying account type, current balance, and account number."
+            }
+          ]
+        },
+        {
+          "summary": "Build customer accounts page",
+          "description": "Create the accounts list page in <frontend/src/features/accounts/>.\n\nDisplays all customer accounts in a table with columns: account number, account type, balance, status.\n\nData source: GET /api/accounts/my.\n\nShow an empty state message when no accounts are found.",
+          "labels": ["frontend", "accounts", "react", "dev-2"],
+          "priority": "Medium",
+          "storyPoints": 3,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Accounts page renders all customer accounts",
+              "given": "a customer with one CHECKING and one SAVINGS account",
+              "when": "the accounts page loads",
+              "then": "both accounts are shown in a table with account number, type, balance, and status"
+            },
+            {
+              "scenario": "Empty state is displayed when no accounts exist",
+              "given": "a customer with no accounts",
+              "when": "the accounts page loads",
+              "then": "a message indicating no accounts are available is displayed"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Build AccountsPage component",
+              "description": "Create <frontend/src/features/accounts/AccountsPage.tsx> that fetches and renders the customer account list."
+            },
+            {
+              "summary": "Create AccountTable component",
+              "description": "Create <frontend/src/components/AccountTable.tsx> as a reusable table component for displaying account rows."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "summary": "Money Transfer & Transaction History",
+      "description": "Implement money transfer between customer-owned accounts with full business rule validation, normalized debit and credit entry recording, and paginated transaction history retrieval.",
+      "labels": ["transaction-service", "transfer", "account-service", "history"],
+      "priority": "High",
+      "userType": "authenticated user",
+      "functionality": "transfer money between their own checking and savings accounts and view a full history of past transactions",
+      "benefit": "manage their own funds flexibly while maintaining a traceable and auditable record of all money movements",
+      "stories": [
+        {
+          "summary": "Implement internal account validation and balance update in Account Service",
+          "description": "Create internal-only endpoints in <account-service> that are called by Transaction Service during a transfer. These endpoints are not exposed at the API Gateway.\n\nEndpoints:\n```\nGET   /internal/accounts/{accountId}\nPATCH /internal/accounts/{accountId}/balance\n```\n\nGET /internal/accounts/{accountId} returns customerId, status, and current balance.\n\nPATCH /internal/accounts/{accountId}/balance accepts an amount delta (positive = credit, negative = debit), updates the balance atomically, and evicts the Redis cache key:\n```\ncustomer:{customerId}:account-summary\n```",
+          "labels": ["account-service", "backend", "internal-api", "dev-3"],
+          "priority": "High",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Balance is updated and cache is evicted",
+              "given": "a PATCH request to /internal/accounts/{accountId}/balance with a valid delta",
+              "when": "the endpoint is called",
+              "then": "the account balance is updated in PostgreSQL and the Redis cache key for that customer is deleted"
+            },
+            {
+              "scenario": "Account details are returned for ownership validation",
+              "given": "a valid accountId",
+              "when": "GET /internal/accounts/{accountId} is called",
+              "then": "the account with customerId, balance, and status is returned"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Add getAccountInternal and updateBalance methods to AccountService",
+              "description": "Add methods in <account-service/src/main/java/com/bank/accountservice/service/AccountService.java> for internal account retrieval and balance delta application."
+            },
+            {
+              "summary": "Create InternalAccountController",
+              "description": "Create <account-service/src/main/java/com/bank/accountservice/controller/InternalAccountController.java> with GET /internal/accounts/{accountId} and PATCH /internal/accounts/{accountId}/balance."
+            }
+          ]
+        },
+        {
+          "summary": "Implement transfer API with business rule validation",
+          "description": "Create the money transfer endpoint in <transaction-service>.\n\nEndpoint:\n```\nPOST /api/transactions/transfer\n```\n\nRequest fields: fromAccountId, toAccountId, amount, description.\n\nBusiness rules to enforce:\n- amount must be greater than zero\n- fromAccountId and toAccountId must not be the same\n- both accounts must exist\n- both accounts must belong to the authenticated customer\n- both accounts must have ACTIVE status\n- source account must have sufficient balance\n\nOn success:\n1. Persist a transactions row with status COMPLETED\n2. Persist two transaction_entries rows: DEBIT from source, CREDIT to destination\n3. Call PATCH /internal/accounts/{fromAccountId}/balance with negative delta\n4. Call PATCH /internal/accounts/{toAccountId}/balance with positive delta\n\nOn validation failure: persist the transaction with status FAILED and store the failure_reason.",
+          "labels": ["transaction-service", "transfer", "backend", "dev-3"],
+          "priority": "High",
+          "storyPoints": 8,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Successful transfer creates transaction and entry records",
+              "given": "a customer with two ACTIVE accounts and sufficient balance in the source account",
+              "when": "POST /api/transactions/transfer is called with a valid amount",
+              "then": "a transactions row with COMPLETED status and two transaction_entries rows (DEBIT and CREDIT) are persisted, and a 201 response is returned"
+            },
+            {
+              "scenario": "Insufficient balance is rejected",
+              "given": "a source account with a balance lower than the requested amount",
+              "when": "POST /api/transactions/transfer is called",
+              "then": "a 400 Bad Request response is returned with message 'Insufficient balance for transfer'"
+            },
+            {
+              "scenario": "Same-account transfer is rejected",
+              "given": "fromAccountId equals toAccountId in the request",
+              "when": "POST /api/transactions/transfer is called",
+              "then": "a 400 Bad Request response is returned"
+            },
+            {
+              "scenario": "Account belonging to another customer is rejected",
+              "given": "a toAccountId that belongs to a different customer",
+              "when": "POST /api/transactions/transfer is called",
+              "then": "a 403 Forbidden response is returned"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Create Transaction and TransactionEntry entities",
+              "description": "Create JPA entities in <transaction-service/src/main/java/com/bank/transactionservice/entity/> for Transaction and TransactionEntry with the one-to-many relationship."
+            },
+            {
+              "summary": "Create TransactionRepository and TransactionEntryRepository",
+              "description": "Create Spring Data JPA repositories in <transaction-service/src/main/java/com/bank/transactionservice/repository/>."
+            },
+            {
+              "summary": "Create AccountServiceClient using OpenFeign",
+              "description": "Create <transaction-service/src/main/java/com/bank/transactionservice/client/AccountServiceClient.java> to call GET /internal/accounts/{id} and PATCH /internal/accounts/{id}/balance."
+            },
+            {
+              "summary": "Implement transfer business logic in TransactionService",
+              "description": "Implement all validation rules, the two-step balance update via AccountServiceClient, and transaction/entry persistence in <transaction-service/src/main/java/com/bank/transactionservice/service/TransactionService.java>."
+            },
+            {
+              "summary": "Create TransactionController with POST /api/transactions/transfer",
+              "description": "Create <transaction-service/src/main/java/com/bank/transactionservice/controller/TransactionController.java> with the transfer endpoint."
+            },
+            {
+              "summary": "Create TransferRequest and TransactionResponse DTOs",
+              "description": "Create request and response DTOs in <transaction-service/src/main/java/com/bank/transactionservice/dto/>."
+            }
+          ]
+        },
+        {
+          "summary": "Implement transaction history APIs",
+          "description": "Create transaction history retrieval endpoints in <transaction-service>.\n\nEndpoints:\n```\nGET /api/transactions/my\nGET /api/transactions/account/{accountId}\nGET /api/transactions/{transactionId}\n```\n\nAll endpoints are customer-scoped, reading customerId from the X-User-Id header.\n\nAll list endpoints return paginated responses with page, size, totalElements, and totalPages.\n\nThe transactionType field in responses reflects direction from the customer's perspective: TRANSFER_OUT for DEBIT entries, TRANSFER_IN for CREDIT entries.",
+          "labels": ["transaction-service", "backend", "history", "dev-3"],
+          "priority": "High",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Customer retrieves paginated transaction history",
+              "given": "a customer with completed transfer transactions",
+              "when": "GET /api/transactions/my is called",
+              "then": "a paginated response is returned with transactionType, amount, status, and createdAt per transaction"
+            },
+            {
+              "scenario": "Transaction history by account is paginated",
+              "given": "a valid accountId belonging to the requesting customer",
+              "when": "GET /api/transactions/account/{accountId} is called",
+              "then": "a paginated response of transactions for that account is returned"
+            },
+            {
+              "scenario": "Single transaction is returned by ID",
+              "given": "a valid transactionId belonging to the requesting customer",
+              "when": "GET /api/transactions/{transactionId} is called",
+              "then": "full transaction details including fromAccountId, toAccountId, amount, and status are returned"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Add pageable customer-scoped queries to TransactionRepository",
+              "description": "Add findByCustomerId(UUID customerId, Pageable pageable) and findByAccountId methods in <transaction-service/src/main/java/com/bank/transactionservice/repository/TransactionRepository.java>."
+            },
+            {
+              "summary": "Implement history methods in TransactionService",
+              "description": "Add getMyTransactions, getTransactionsByAccount, and getTransactionById with ownership checks in <transaction-service/src/main/java/com/bank/transactionservice/service/TransactionService.java>."
+            },
+            {
+              "summary": "Add history endpoints to TransactionController",
+              "description": "Add GET /api/transactions/my, GET /api/transactions/account/{accountId}, and GET /api/transactions/{transactionId} to <transaction-service/src/main/java/com/bank/transactionservice/controller/TransactionController.java>."
+            }
+          ]
+        },
+        {
+          "summary": "Build transfer page",
+          "description": "Create the transfer form in <frontend/src/features/transactions/>.\n\nFields:\n- From account (dropdown populated from GET /api/accounts/my)\n- To account (dropdown populated from GET /api/accounts/my)\n- Amount (numeric, must be greater than zero)\n- Description (optional)\n\nOn success: show confirmation message and refresh the dashboard account summary.\nOn failure: display the API error message inline on the form.",
+          "labels": ["frontend", "transfer", "react", "dev-3"],
+          "priority": "High",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Form prevents same-account transfer",
+              "given": "the user selects the same account in both the From and To dropdowns",
+              "when": "the form is submitted",
+              "then": "a validation error is shown and the API is not called"
+            },
+            {
+              "scenario": "Successful transfer shows confirmation",
+              "given": "a valid transfer request",
+              "when": "the form is submitted",
+              "then": "a success confirmation message is displayed and account balances are refreshed"
+            },
+            {
+              "scenario": "API error is surfaced to the user",
+              "given": "the transfer fails due to insufficient balance",
+              "when": "the API returns 400",
+              "then": "the error message from the API response is displayed on the form"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Create transaction API client",
+              "description": "Create <frontend/src/api/transactionApi.ts> with transfer and getMyTransactions functions."
+            },
+            {
+              "summary": "Build TransferPage component",
+              "description": "Create <frontend/src/features/transactions/TransferPage.tsx> with React Hook Form, Zod validation, and account dropdowns loaded from GET /api/accounts/my."
+            }
+          ]
+        },
+        {
+          "summary": "Build transaction history page",
+          "description": "Create the transaction history page in <frontend/src/features/transactions/>.\n\nDisplays a paginated table of customer transactions with columns: date, type (TRANSFER_IN / TRANSFER_OUT), amount, status, description.\n\nData source: GET /api/transactions/my.",
+          "labels": ["frontend", "history", "react", "dev-3"],
+          "priority": "Medium",
+          "storyPoints": 3,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Transaction table renders rows correctly",
+              "given": "a customer with completed transactions",
+              "when": "the transaction history page loads",
+              "then": "each transaction is rendered as a row with date, type, amount, and status"
+            },
+            {
+              "scenario": "Pagination controls navigate between pages",
+              "given": "more than one page of transactions",
+              "when": "the next page button is clicked",
+              "then": "the next set of transactions is loaded and displayed"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Build TransactionHistoryPage component",
+              "description": "Create <frontend/src/features/transactions/TransactionHistoryPage.tsx> with a paginated transaction table."
+            },
+            {
+              "summary": "Create TransactionTable component",
+              "description": "Create <frontend/src/components/TransactionTable.tsx> as a reusable table for transaction rows."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "summary": "Kafka Event Messaging & Notifications",
+      "description": "Implement asynchronous notification delivery using Kafka so customers receive an in-app notification after every successful transfer, published by Transaction Service and consumed by Notification Service from the transaction-events topic.",
+      "labels": ["notification-service", "kafka", "events", "transaction-service"],
+      "priority": "High",
+      "userType": "authenticated user",
+      "functionality": "receive an in-app notification after a successful money transfer without the transfer response being delayed",
+      "benefit": "stay informed about account activity asynchronously while keeping the transfer API response fast",
+      "stories": [
+        {
+          "summary": "Implement Kafka producer in Transaction Service",
+          "description": "After a successful transfer, publish a TRANSFER_COMPLETED event to the Kafka topic transaction-events from <transaction-service>.\n\nEvent schema:\n```\n{\n  eventId,\n  eventType: TRANSFER_COMPLETED,\n  transactionId,\n  customerId,\n  fromAccountId,\n  toAccountId,\n  amount,\n  timestamp\n}\n```\n\nThe event is published after the transaction is persisted with COMPLETED status. If the Kafka publish fails, log the error but do not roll back the transaction.",
+          "labels": ["transaction-service", "kafka", "backend", "dev-3"],
+          "priority": "High",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Event is published after successful transfer",
+              "given": "a transfer that completes successfully and is persisted with COMPLETED status",
+              "when": "the transfer service method finishes",
+              "then": "a TRANSFER_COMPLETED event is published to the transaction-events Kafka topic"
+            },
+            {
+              "scenario": "Kafka failure does not roll back a completed transaction",
+              "given": "a completed transfer where the Kafka producer throws an exception",
+              "when": "the error occurs during publish",
+              "then": "the transaction remains COMPLETED in the database and the error is logged"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Add Kafka producer dependency and configuration",
+              "description": "Add spring-kafka dependency and configure bootstrap servers and serializer in <transaction-service/src/main/resources/application.yml>."
+            },
+            {
+              "summary": "Create TransferCompletedEvent DTO",
+              "description": "Create <transaction-service/src/main/java/com/bank/transactionservice/dto/TransferCompletedEvent.java> with all event fields."
+            },
+            {
+              "summary": "Create TransactionEventProducer",
+              "description": "Create <transaction-service/src/main/java/com/bank/transactionservice/producer/TransactionEventProducer.java> using KafkaTemplate to publish to the transaction-events topic."
+            },
+            {
+              "summary": "Call producer at the end of successful transfer flow",
+              "description": "Invoke TransactionEventProducer.publish() after successful persistence in <transaction-service/src/main/java/com/bank/transactionservice/service/TransactionService.java>."
+            }
+          ]
+        },
+        {
+          "summary": "Implement Notification Service and Kafka consumer",
+          "description": "Implement the Notification Service in <notification-service> that consumes TRANSFER_COMPLETED events from Kafka and persists customer notifications.\n\nKafka consumer group: notification-service-group\nTopic: transaction-events\n\nOn consuming a TRANSFER_COMPLETED event:\n1. Check if a notification with the same event_id already exists (idempotency guard)\n2. If not, create a notifications row with:\n   - notification_type: TRANSFER_SUCCESS\n   - title: Transfer Successful\n   - message: Your transfer of ${amount} was completed successfully.\n   - status: UNREAD",
+          "labels": ["notification-service", "kafka", "backend", "dev-4"],
+          "priority": "High",
+          "storyPoints": 8,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Notification is created on TRANSFER_COMPLETED event",
+              "given": "a TRANSFER_COMPLETED event is published to transaction-events",
+              "when": "the Notification Service consumer receives the event",
+              "then": "a notifications row is created with TRANSFER_SUCCESS type and UNREAD status"
+            },
+            {
+              "scenario": "Duplicate event is not processed twice",
+              "given": "a TRANSFER_COMPLETED event whose event_id already exists in the notifications table",
+              "when": "the consumer processes the event again",
+              "then": "no duplicate notification row is created"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Create Notification entity",
+              "description": "Create <notification-service/src/main/java/com/bank/notificationservice/entity/Notification.java> with all fields from the notifications table schema."
+            },
+            {
+              "summary": "Create NotificationRepository",
+              "description": "Create <notification-service/src/main/java/com/bank/notificationservice/repository/NotificationRepository.java> with findByCustomerId and existsByEventId query methods."
+            },
+            {
+              "summary": "Implement Kafka consumer",
+              "description": "Create <notification-service/src/main/java/com/bank/notificationservice/consumer/TransactionEventConsumer.java> with @KafkaListener subscribing to transaction-events."
+            },
+            {
+              "summary": "Implement notification creation with idempotency check",
+              "description": "Add createFromEvent method in <notification-service/src/main/java/com/bank/notificationservice/service/NotificationService.java> that checks existsByEventId before inserting."
+            }
+          ]
+        },
+        {
+          "summary": "Implement notification APIs",
+          "description": "Create notification retrieval and mark-as-read endpoints in <notification-service>.\n\nEndpoints:\n```\nGET   /api/notifications/my\nPATCH /api/notifications/{notificationId}/read\n```\n\nGET /api/notifications/my reads customerId from X-User-Id and supports optional query parameter unreadOnly=true.\n\nPATCH /api/notifications/{notificationId}/read sets status to READ and persists the read_at timestamp. Must verify the notification belongs to the requesting customer.",
+          "labels": ["notification-service", "backend", "dev-4"],
+          "priority": "High",
+          "storyPoints": 3,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Customer retrieves their notifications",
+              "given": "a customer with unread notifications",
+              "when": "GET /api/notifications/my is called",
+              "then": "a list of notifications is returned with notificationId, type, title, message, status, and createdAt"
+            },
+            {
+              "scenario": "Notification is marked as read",
+              "given": "an UNREAD notification belonging to the requesting customer",
+              "when": "PATCH /api/notifications/{notificationId}/read is called",
+              "then": "the status changes to READ and read_at is set to the current timestamp"
+            },
+            {
+              "scenario": "Notification from another customer is rejected",
+              "given": "a notificationId belonging to a different customer",
+              "when": "PATCH /api/notifications/{notificationId}/read is called",
+              "then": "a 403 Forbidden response is returned"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Implement getMyNotifications and markAsRead in NotificationService",
+              "description": "Add customer-scoped retrieval with optional unreadOnly filter and ownership-checked markAsRead in <notification-service/src/main/java/com/bank/notificationservice/service/NotificationService.java>."
+            },
+            {
+              "summary": "Create NotificationController",
+              "description": "Create <notification-service/src/main/java/com/bank/notificationservice/controller/NotificationController.java> with GET /api/notifications/my and PATCH /api/notifications/{id}/read."
+            },
+            {
+              "summary": "Create NotificationResponse DTO",
+              "description": "Create <notification-service/src/main/java/com/bank/notificationservice/dto/NotificationResponse.java> with notificationId, type, title, message, status, createdAt, and readAt fields."
+            }
+          ]
+        },
+        {
+          "summary": "Build notifications UI",
+          "description": "Create the notifications page and a navbar notification badge in <frontend/src/features/notifications/>.\n\nComponents:\n- Notification list page at /notifications showing all notifications\n- Navbar badge showing unread notification count\n\nOn clicking a notification, call PATCH /api/notifications/{id}/read and update the item's visual state to indicate it has been read.",
+          "labels": ["frontend", "notifications", "react", "dev-4"],
+          "priority": "Medium",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Unread notification count appears in navbar",
+              "given": "a customer with two unread notifications",
+              "when": "any authenticated page is loaded",
+              "then": "the navbar shows a badge with the count 2"
+            },
+            {
+              "scenario": "Notification is marked as read on click",
+              "given": "an UNREAD notification in the list",
+              "when": "the notification is clicked",
+              "then": "PATCH /api/notifications/{id}/read is called and the notification's visual style changes to indicate it is read"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Create notification API client",
+              "description": "Create <frontend/src/api/notificationApi.ts> with getMyNotifications and markAsRead functions."
+            },
+            {
+              "summary": "Build NotificationsPage component",
+              "description": "Create <frontend/src/features/notifications/NotificationsPage.tsx> displaying a list of customer notifications."
+            },
+            {
+              "summary": "Build NotificationBadge component",
+              "description": "Create <frontend/src/components/NotificationBadge.tsx> that fetches unread notification count and renders a badge in the navbar."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "summary": "Admin Portal",
+      "description": "Implement admin-facing features so administrators can view all customers, manage bank accounts, and view system-wide transactions. Scoped as Should Have — begin only after all core customer flows are complete.",
+      "labels": ["admin", "account-service", "user-service", "should-have"],
+      "priority": "Medium",
+      "userType": "admin",
+      "functionality": "view all customers and manage their bank accounts and account statuses",
+      "benefit": "perform day-to-day account operations without requiring direct database access",
+      "stories": [
+        {
+          "summary": "Implement admin get all customers API",
+          "description": "Create the admin endpoint to list all customers in <user-service>.\n\nEndpoint:\n```\nGET /api/users\n```\n\nSupports query parameters: page, size, status.\n\nReturns a paginated list of customer summaries. Requires ADMIN role.",
+          "labels": ["user-service", "backend", "admin", "dev-1"],
+          "priority": "Medium",
+          "storyPoints": 3,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Admin retrieves paginated customer list",
+              "given": "an admin user and multiple registered customers",
+              "when": "GET /api/users is called",
+              "then": "a paginated list of customers with userId, firstName, lastName, email, role, and status is returned"
+            },
+            {
+              "scenario": "CUSTOMER role is forbidden",
+              "given": "a JWT with CUSTOMER role",
+              "when": "GET /api/users is called",
+              "then": "a 403 Forbidden response is returned"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Add findAll pageable query to UserRepository",
+              "description": "Add a pageable findAll method with optional status filter in <user-service/src/main/java/com/bank/userservice/repository/UserRepository.java>."
+            },
+            {
+              "summary": "Add GET /api/users to UserController",
+              "description": "Add admin-secured endpoint with pagination support in <user-service/src/main/java/com/bank/userservice/controller/UserController.java>."
+            }
+          ]
+        },
+        {
+          "summary": "Implement admin account list and status management APIs",
+          "description": "Create admin endpoints to view all accounts and update account status in <account-service>.\n\nEndpoints:\n```\nGET   /api/accounts\nPATCH /api/accounts/{accountId}/status\n```\n\nGET /api/accounts supports filtering by customerId, accountType, and status with pagination.\n\nPATCH /api/accounts/{accountId}/status accepts status ACTIVE, INACTIVE, or LOCKED with an optional reason field.",
+          "labels": ["account-service", "backend", "admin", "dev-2"],
+          "priority": "Medium",
+          "storyPoints": 3,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Admin views all accounts across customers",
+              "given": "an admin user",
+              "when": "GET /api/accounts is called",
+              "then": "a paginated list of all accounts across all customers is returned"
+            },
+            {
+              "scenario": "Admin locks an account",
+              "given": "an ACTIVE account",
+              "when": "PATCH /api/accounts/{accountId}/status is called with status LOCKED",
+              "then": "the account status is updated to LOCKED and a 200 response is returned"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Add GET /api/accounts to AdminAccountController",
+              "description": "Add a pageable findAll with optional filters in <account-service/src/main/java/com/bank/accountservice/controller/AdminAccountController.java>."
+            },
+            {
+              "summary": "Add PATCH /api/accounts/{accountId}/status to AdminAccountController",
+              "description": "Add status update with validation and persistence in <account-service/src/main/java/com/bank/accountservice/controller/AdminAccountController.java> and <account-service/src/main/java/com/bank/accountservice/service/AccountService.java>."
+            }
+          ]
+        },
+        {
+          "summary": "Implement admin get all transactions API",
+          "description": "Create the admin-scoped transactions endpoint in <transaction-service>.\n\nEndpoint:\n```\nGET /api/transactions/admin\n```\n\nSupports query parameters: customerId, status, page, size.\n\nReturns a paginated list of all transactions across all customers. Requires ADMIN role.",
+          "labels": ["transaction-service", "backend", "admin", "dev-3"],
+          "priority": "Medium",
+          "storyPoints": 2,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Admin retrieves paginated transaction list",
+              "given": "an admin user with transactions in the system",
+              "when": "GET /api/transactions/admin is called",
+              "then": "a paginated list of transactions across all customers is returned"
+            },
+            {
+              "scenario": "Admin can filter transactions by customer",
+              "given": "a customerId query parameter",
+              "when": "GET /api/transactions/admin?customerId={id} is called",
+              "then": "only transactions belonging to that customer are returned"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Add admin findAll pageable query to TransactionRepository",
+              "description": "Add findAllByCustomerId and unconditional Page<Transaction> query methods in <transaction-service/src/main/java/com/bank/transactionservice/repository/TransactionRepository.java>."
+            },
+            {
+              "summary": "Add GET /api/transactions/admin to TransactionController",
+              "description": "Add an admin-secured endpoint with pagination and optional customerId filter in <transaction-service/src/main/java/com/bank/transactionservice/controller/TransactionController.java>."
+            }
+          ]
+        },
+        {
+          "summary": "Build admin dashboard page",
+          "description": "Create the admin dashboard in <frontend/src/features/admin/>.\n\nDisplays:\n- Customer list table (GET /api/users)\n- Account creation form (POST /api/accounts)\n- Account status update controls (PATCH /api/accounts/{id}/status)\n\nAdmin users are redirected to /admin after login via the AdminRoute guard.",
+          "labels": ["frontend", "admin", "react", "dev-2"],
+          "priority": "Medium",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Admin sees the customer list on dashboard load",
+              "given": "an admin user navigates to /admin",
+              "when": "the page loads",
+              "then": "a table of all customers with name, email, and status is displayed"
+            },
+            {
+              "scenario": "Admin creates an account for a customer",
+              "given": "a valid customerId and account type selection",
+              "when": "the create account form is submitted",
+              "then": "POST /api/accounts is called and a success message is shown"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Create admin API clients",
+              "description": "Create <frontend/src/api/adminApi.ts> with getCustomers, getAllAccounts, createAccount, and updateAccountStatus functions."
+            },
+            {
+              "summary": "Build AdminDashboardPage component",
+              "description": "Create <frontend/src/features/admin/AdminDashboardPage.tsx> with the customer list table and account creation form."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "summary": "Testing",
+      "description": "Write unit, integration, and frontend tests across all services to validate core workflows, transfer business rules, and edge cases before deployment.",
+      "labels": ["testing", "quality", "junit", "vitest"],
+      "priority": "Medium",
+      "userType": "operations engineer",
+      "functionality": "run automated tests that verify core banking workflows pass and known error cases are rejected correctly",
+      "benefit": "catch regressions early and give the team confidence before deploying to AWS",
+      "stories": [
+        {
+          "summary": "Write User Service tests",
+          "description": "Write unit and controller tests for <user-service> covering registration, login, and profile retrieval.\n\nRequired scenarios:\n- Register user successfully\n- Reject duplicate email\n- Login successfully and receive JWT\n- Reject login with invalid password\n- GET /users/me returns correct profile\n\nTools: JUnit 5, Mockito, MockMvc.",
+          "labels": ["testing", "user-service", "backend", "dev-1"],
+          "priority": "Medium",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Registration happy path test passes",
+              "given": "a valid register request with a unique email",
+              "when": "the registration test is executed",
+              "then": "the test confirms a 201 response is returned with correct user fields"
+            },
+            {
+              "scenario": "Duplicate email test passes",
+              "given": "a register request with an existing email",
+              "when": "the duplicate email test is executed",
+              "then": "the test confirms a 409 Conflict response is returned"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Write UserService unit tests",
+              "description": "Create <user-service/src/test/java/com/bank/userservice/service/UserServiceTest.java> using Mockito to mock UserRepository and test registration and login logic."
+            },
+            {
+              "summary": "Write AuthController MockMvc tests",
+              "description": "Create <user-service/src/test/java/com/bank/userservice/controller/AuthControllerTest.java> testing POST /auth/register and POST /auth/login with MockMvc."
+            }
+          ]
+        },
+        {
+          "summary": "Write Account Service tests",
+          "description": "Write unit and controller tests for <account-service> covering account creation, retrieval, and cache behaviour.\n\nRequired scenarios:\n- Create account successfully\n- Reject negative initial balance\n- Get accounts by customer\n- Get account summary returns correct total balance\n- Cache key is evicted after balance update\n\nTools: JUnit 5, Mockito, MockMvc.",
+          "labels": ["testing", "account-service", "backend", "dev-2"],
+          "priority": "Medium",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Create account happy path test passes",
+              "given": "a valid create account request with ADMIN role",
+              "when": "the test is executed",
+              "then": "the test confirms a 201 response with the correct account fields"
+            },
+            {
+              "scenario": "Cache eviction test passes",
+              "given": "a balance update operation on an account",
+              "when": "the test is executed",
+              "then": "the test confirms the Redis cache key is deleted after the update"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Write AccountService unit tests",
+              "description": "Create <account-service/src/test/java/com/bank/accountservice/service/AccountServiceTest.java> using Mockito."
+            },
+            {
+              "summary": "Write AccountController MockMvc tests",
+              "description": "Create <account-service/src/test/java/com/bank/accountservice/controller/AccountControllerTest.java> for create account, get my accounts, and get summary endpoints."
+            }
+          ]
+        },
+        {
+          "summary": "Write Transaction Service tests",
+          "description": "Write unit and controller tests for <transaction-service> covering transfer rules and history.\n\nRequired scenarios:\n- Successful transfer creates transaction and two entries\n- Reject insufficient balance\n- Reject same-account transfer\n- Reject inactive account\n- Kafka event is published after successful transfer\n- GET /transactions/my returns paginated results\n\nTools: JUnit 5, Mockito, MockMvc.",
+          "labels": ["testing", "transaction-service", "backend", "dev-3"],
+          "priority": "Medium",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Successful transfer test passes",
+              "given": "two valid ACTIVE accounts with sufficient balance",
+              "when": "the transfer test is executed",
+              "then": "the test confirms one transaction row and two entry rows are persisted with COMPLETED status"
+            },
+            {
+              "scenario": "Insufficient balance test passes",
+              "given": "a source account with a balance lower than the transfer amount",
+              "when": "the test is executed",
+              "then": "the test confirms a 400 response and no balance change"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Write TransactionService unit tests",
+              "description": "Create <transaction-service/src/test/java/com/bank/transactionservice/service/TransactionServiceTest.java> with mocked AccountServiceClient and TransactionEventProducer."
+            },
+            {
+              "summary": "Write TransactionController MockMvc tests",
+              "description": "Create <transaction-service/src/test/java/com/bank/transactionservice/controller/TransactionControllerTest.java> for transfer and history endpoints."
+            }
+          ]
+        },
+        {
+          "summary": "Write Notification Service tests",
+          "description": "Write unit tests for <notification-service> covering Kafka event consumption and notification API behaviour.\n\nRequired scenarios:\n- Consume transfer event and create notification\n- Reject duplicate events via event_id check\n- GET /notifications/my returns customer notifications\n- PATCH /notifications/{id}/read updates status and read_at\n\nTools: JUnit 5, Mockito, MockMvc.",
+          "labels": ["testing", "notification-service", "backend", "dev-4"],
+          "priority": "Medium",
+          "storyPoints": 3,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Notification creation from event test passes",
+              "given": "a valid TRANSFER_COMPLETED Kafka event",
+              "when": "the consumer test is executed",
+              "then": "the test confirms a notification row is created with TRANSFER_SUCCESS type and UNREAD status"
+            },
+            {
+              "scenario": "Duplicate event idempotency test passes",
+              "given": "a TRANSFER_COMPLETED event whose event_id already exists",
+              "when": "the duplicate event test is executed",
+              "then": "the test confirms no second notification is created"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Write TransactionEventConsumer unit tests",
+              "description": "Create <notification-service/src/test/java/com/bank/notificationservice/consumer/TransactionEventConsumerTest.java> with mocked NotificationService."
+            },
+            {
+              "summary": "Write NotificationController MockMvc tests",
+              "description": "Create <notification-service/src/test/java/com/bank/notificationservice/controller/NotificationControllerTest.java> for GET /my and PATCH /read endpoints."
+            }
+          ]
+        },
+        {
+          "summary": "Write frontend form validation tests",
+          "description": "Write frontend tests in <frontend> for the three main forms and core page renders using Vitest and React Testing Library.\n\nRequired scenarios:\n- Login form shows errors on empty submission\n- Register form validates email format\n- Transfer form blocks same-account selection\n- Dashboard renders account summary cards\n- Transaction table renders rows\n\nTools: Vitest, React Testing Library.",
+          "labels": ["testing", "frontend", "react", "dev-1"],
+          "priority": "Medium",
+          "storyPoints": 3,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Login form validation test passes",
+              "given": "the LoginPage component is rendered",
+              "when": "the form is submitted without any input",
+              "then": "the test confirms validation error messages are visible"
+            },
+            {
+              "scenario": "Transfer same-account validation test passes",
+              "given": "the same account is selected in both From and To dropdowns",
+              "when": "the TransferPage form is submitted",
+              "then": "the test confirms a validation error is displayed and the API is not called"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Write LoginPage form validation tests",
+              "description": "Create <frontend/src/features/auth/LoginPage.test.tsx> asserting inline validation error rendering on empty submission."
+            },
+            {
+              "summary": "Write TransferPage form tests",
+              "description": "Create <frontend/src/features/transactions/TransferPage.test.tsx> for same-account and zero-amount validation cases."
+            },
+            {
+              "summary": "Write DashboardPage render test",
+              "description": "Create <frontend/src/features/dashboard/DashboardPage.test.tsx> with a mocked API response asserting account summary cards render correctly."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "summary": "DevOps, CI/CD & AWS Deployment",
+      "description": "Build the Jenkins pipeline and provision AWS infrastructure with Terraform so the platform can be automatically built, tested, containerized, pushed to ECR, and deployed to AWS EC2 with Prometheus, Grafana, and Zipkin monitoring.",
+      "labels": ["devops", "jenkins", "aws", "terraform", "docker", "monitoring"],
+      "priority": "High",
+      "userType": "operations engineer",
+      "functionality": "automatically build, test, and deploy all services to AWS on every push to the main branch",
+      "benefit": "reduce manual deployment errors and demonstrate a production-style CI/CD workflow for the final demo",
+      "stories": [
+        {
+          "summary": "Create Dockerfiles for all backend services and frontend",
+          "description": "Create multi-stage Dockerfiles in each service directory.\n\nBackend Dockerfile pattern for each of <api-gateway/Dockerfile>, <user-service/Dockerfile>, <account-service/Dockerfile>, <transaction-service/Dockerfile>, <notification-service/Dockerfile>:\n- Build stage: eclipse-temurin:21-jdk, run ./mvnw clean package -DskipTests\n- Runtime stage: eclipse-temurin:21-jre, copy jar, expose 8080\n\nFrontend Dockerfile in <frontend/Dockerfile>:\n- Build stage: node:22-alpine, npm ci, npm run build\n- Runtime stage: nginx:alpine, copy dist/ to /usr/share/nginx/html, expose 80\n\nAdd <application-docker.yml> profiles to each backend service to override datasource URLs and service URLs for the Docker Compose environment.",
+          "labels": ["devops", "docker", "dev-4"],
+          "priority": "High",
+          "storyPoints": 3,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Backend service image builds and starts cleanly",
+              "given": "a Dockerfile in a backend service directory",
+              "when": "docker build is run",
+              "then": "the image builds without errors and the running container returns 200 from /actuator/health"
+            },
+            {
+              "scenario": "Frontend image serves the React app via nginx",
+              "given": "the frontend Dockerfile",
+              "when": "docker build and docker run are executed",
+              "then": "the React app is accessible at the container port via nginx"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Create multi-stage Dockerfiles for all 5 backend services",
+              "description": "Create <Dockerfile> in api-gateway, user-service, account-service, transaction-service, and notification-service directories using eclipse-temurin:21-jdk build and eclipse-temurin:21-jre runtime stages."
+            },
+            {
+              "summary": "Create frontend Dockerfile",
+              "description": "Create multi-stage <frontend/Dockerfile> using node:22-alpine for the build stage and nginx:alpine for the runtime stage."
+            },
+            {
+              "summary": "Add application-docker.yml to each backend service",
+              "description": "Create <src/main/resources/application-docker.yml> in each service to override datasource URL, Redis host, Kafka bootstrap servers, and service URLs for the Docker Compose network."
+            }
+          ]
+        },
+        {
+          "summary": "Configure Jenkins CI/CD pipeline",
+          "description": "Create the Jenkins pipeline in <Jenkinsfile> at the project root.\n\nPipeline stages:\n1. Checkout code\n2. Run backend tests (parallel per service)\n3. Run frontend tests\n4. Build Spring Boot JARs\n5. Build Docker images\n6. Login to Amazon ECR\n7. Push images to ECR\n8. Deploy to AWS EC2 via SSH\n9. Run smoke tests\n\nSmoke test targets:\n```\nGET  /actuator/health\nPOST /api/auth/login\nGET  /api/accounts/summary\n```",
+          "labels": ["devops", "jenkins", "ci-cd", "dev-4"],
+          "priority": "High",
+          "storyPoints": 8,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Pipeline runs all stages on push to main",
+              "given": "a commit is pushed to the main branch",
+              "when": "the Jenkins pipeline is triggered",
+              "then": "all stages execute in order and the pipeline completes with a success status"
+            },
+            {
+              "scenario": "Pipeline fails and stops on test failure",
+              "given": "a failing test in any backend service",
+              "when": "the backend tests stage runs",
+              "then": "the pipeline stops at the failed stage and marks the build as failed without proceeding to deployment"
+            },
+            {
+              "scenario": "Smoke test confirms healthy deployment",
+              "given": "images have been deployed to EC2",
+              "when": "the smoke test stage runs",
+              "then": "GET /actuator/health returns 200 from the EC2 public IP"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Write declarative Jenkinsfile",
+              "description": "Create <Jenkinsfile> with parallel backend test stages, sequential Docker build, ECR login, ECR push, SSH deployment to EC2, and smoke test stages."
+            },
+            {
+              "summary": "Create ECR repositories in AWS",
+              "description": "Create ECR repositories for api-gateway, user-service, account-service, transaction-service, notification-service, and frontend images in AWS."
+            },
+            {
+              "summary": "Configure Jenkins SSH credentials for EC2",
+              "description": "Add the EC2 SSH key pair as a Jenkins credential with ID bank-ec2-ssh-key for use in the deployment stage."
+            },
+            {
+              "summary": "Write smoke test script",
+              "description": "Create <devops/smoke-test.sh> with curl health check commands targeting the deployed API Gateway."
+            }
+          ]
+        },
+        {
+          "summary": "Provision AWS infrastructure with Terraform",
+          "description": "Create Terraform configuration in <infra/> to provision MVP AWS infrastructure.\n\nMVP resources:\n- VPC with public subnet\n- Security groups (allow 8080, 443, 22 inbound)\n- EC2 instance (t3.medium minimum)\n- RDS PostgreSQL 16\n- ECR repositories (one per service)\n- S3 bucket with static website hosting for the React frontend\n- IAM role for EC2 with ECR pull permissions\n\nTerraform structure:\n```\ninfra/\n  main.tf\n  variables.tf\n  outputs.tf\n  providers.tf\n  environments/\n    dev.tfvars\n  modules/\n    vpc/\n    ec2/\n    rds/\n    ecr/\n    s3-frontend/\n    security-groups/\n```",
+          "labels": ["devops", "terraform", "aws", "infrastructure", "dev-4"],
+          "priority": "High",
+          "storyPoints": 8,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Terraform plan completes without errors",
+              "given": "the Terraform configuration is written",
+              "when": "terraform plan is run with dev.tfvars",
+              "then": "the plan completes without errors and shows the expected number of resources to create"
+            },
+            {
+              "scenario": "terraform apply provisions EC2 and RDS",
+              "given": "AWS credentials are configured",
+              "when": "terraform apply is run",
+              "then": "an EC2 instance and an RDS PostgreSQL instance are running and reachable"
+            },
+            {
+              "scenario": "Frontend is accessible via S3 static website URL",
+              "given": "the S3 bucket is provisioned with static website hosting",
+              "when": "the built frontend is uploaded to the bucket",
+              "then": "the React login page loads via the S3 website URL"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Write VPC and security group Terraform modules",
+              "description": "Create <infra/modules/vpc/> and <infra/modules/security-groups/> defining the VPC, public subnet, and inbound rules for ports 22, 8080, and 443."
+            },
+            {
+              "summary": "Write EC2 Terraform module",
+              "description": "Create <infra/modules/ec2/> with an EC2 instance definition, key pair, and IAM instance profile granting ECR pull access."
+            },
+            {
+              "summary": "Write RDS Terraform module",
+              "description": "Create <infra/modules/rds/> with an RDS PostgreSQL 16 instance, DB subnet group, and security group rule permitting access from the EC2 security group."
+            },
+            {
+              "summary": "Write ECR and S3 Terraform modules",
+              "description": "Create <infra/modules/ecr/> with 6 ECR repository definitions and <infra/modules/s3-frontend/> with static website hosting configuration."
+            },
+            {
+              "summary": "Write root main.tf and dev.tfvars",
+              "description": "Create <infra/main.tf> composing all modules and <infra/environments/dev.tfvars> with dev environment variable values."
+            }
+          ]
+        },
+        {
+          "summary": "Configure Prometheus and Grafana monitoring",
+          "description": "Configure application-level monitoring using Prometheus and Grafana.\n\nPrometheus scrapes /actuator/prometheus from all 5 Spring Boot services using the config in <devops/prometheus/prometheus.yml>.\n\nGrafana dashboards to provision:\n- API Health: request count, average response time, error count per service\n- JVM Health: heap memory usage, thread count, GC pause time\n- Banking Metrics: transfer count, failed transfer count, Redis cache hit/miss rate\n\nGrafana datasource and dashboard provisioning goes in <devops/grafana/provisioning/>.",
+          "labels": ["devops", "monitoring", "grafana", "prometheus", "zipkin", "dev-4"],
+          "priority": "Medium",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "Prometheus scrapes all 5 services successfully",
+              "given": "all services are running with Actuator and Micrometer enabled",
+              "when": "Prometheus is running with the correct scrape config",
+              "then": "all 5 service scrape targets show as UP in the Prometheus targets page"
+            },
+            {
+              "scenario": "Grafana API Health dashboard shows request data",
+              "given": "requests have been made through the API Gateway",
+              "when": "the API Health Grafana dashboard is opened",
+              "then": "request count and response time panels display non-zero values"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Write Prometheus scrape configuration",
+              "description": "Create <devops/prometheus/prometheus.yml> with scrape_configs for all 5 services targeting /actuator/prometheus at their respective ports."
+            },
+            {
+              "summary": "Configure Grafana Prometheus datasource provisioning",
+              "description": "Create <devops/grafana/provisioning/datasources/prometheus.yml> to auto-connect Grafana to the Prometheus container on startup."
+            },
+            {
+              "summary": "Create API Health Grafana dashboard",
+              "description": "Create <devops/grafana/provisioning/dashboards/api-health.json> with panels for HTTP request count, response time, and error rate per service."
+            },
+            {
+              "summary": "Configure Micrometer Zipkin tracing in each service",
+              "description": "Add micrometer-tracing-bridge-brave and zipkin-reporter-brave dependencies and configure the zipkin endpoint in each service's <src/main/resources/application.yml>."
+            }
+          ]
+        },
+        {
+          "summary": "Deploy application to AWS EC2 and verify",
+          "description": "Deploy the full platform to the provisioned AWS infrastructure and verify all services are healthy.\n\nDeployment steps:\n1. Push all Docker images to ECR from the Jenkins pipeline\n2. SSH to EC2 and pull images\n3. Start all containers with docker compose up\n4. Upload built React app to S3\n5. Run the 15-step manual E2E checklist from the README against the deployed environment",
+          "labels": ["devops", "aws", "deployment", "dev-4"],
+          "priority": "High",
+          "storyPoints": 5,
+          "acceptanceCriteria": [
+            {
+              "scenario": "All services are healthy on EC2",
+              "given": "Docker Compose is running on EC2 with images pulled from ECR",
+              "when": "GET /actuator/health is called on each service through the gateway",
+              "then": "all services return status UP"
+            },
+            {
+              "scenario": "Frontend loads from S3",
+              "given": "the built React app has been uploaded to the S3 bucket",
+              "when": "the S3 static website URL is opened in a browser",
+              "then": "the login page loads without errors"
+            },
+            {
+              "scenario": "Zipkin shows distributed traces from the deployed system",
+              "given": "a transfer has been performed on the deployed environment",
+              "when": "the Zipkin UI is opened",
+              "then": "a distributed trace spanning api-gateway, transaction-service, account-service, and notification-service is visible"
+            }
+          ],
+          "tasks": [
+            {
+              "summary": "Update docker-compose.yml for production EC2 environment",
+              "description": "Update <docker-compose.yml> with production environment variables pointing to the RDS endpoint, Redis, Kafka, and ECR image URIs."
+            },
+            {
+              "summary": "Deploy and start services on EC2 via SSH",
+              "description": "SSH to EC2, authenticate with ECR, pull all service images, and run docker compose up. Verify all containers start without errors."
+            },
+            {
+              "summary": "Upload frontend build to S3",
+              "description": "Run npm run build in <frontend/> and sync the dist/ output to the S3 bucket using the AWS CLI."
+            },
+            {
+              "summary": "Execute manual E2E checklist against deployed environment",
+              "description": "Run the full 15-step E2E checklist defined in <README.md> against the AWS deployment and document the results."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
