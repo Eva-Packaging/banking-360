@@ -14,13 +14,13 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           # Accepted formats (case-insensitive, anywhere in the title):
-          #   B3-123   B3 123   b3-123   b3 123
-          if echo "$PR_TITLE" | grep -qiE 'b3[-[:space:]][0-9]+'; then
+          #   BF3-123   BF3 123   bf3-123   bf3 123
+          if echo "$PR_TITLE" | grep -qiE 'bf3[-[:space:]][0-9]+'; then
             echo "PR title is valid: $PR_TITLE"
           else
-            echo "ERROR: PR title must contain a B3 ticket reference."
+            echo "ERROR: PR title must contain a BF3 ticket reference."
             echo "Accepted formats (anywhere in the title, case-insensitive):"
-            echo "  B3-123   B3 123   b3-123   b3 123"
+            echo "  BF3-123   BF3 123   bf3-123   bf3 123"
             echo "Got: $PR_TITLE"
             exit 1
           fi

@@ -1,7 +1,7 @@
 {
   "project": {
     "name": "Banking 360",
-    "key": "B3",
+    "key": "BF3",
     "description": "A simplified banking-style full-stack platform built by 4 junior full-stack Java developers in 2 weeks. Demonstrates microservices with Spring Boot, React frontend, PostgreSQL, Redis, Kafka, Docker, Jenkins, AWS, Zipkin, and Grafana."
   },
   "epics": [
