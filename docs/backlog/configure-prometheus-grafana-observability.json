@@ -1,0 +1,67 @@
+{
+  "summary": "Configure Prometheus and Grafana observability for backend services",
+  "description": "Set up the full observability stack so that metrics emitted by the 5 Spring Boot services are scraped by Prometheus and visualised in Grafana.\n\nAll configuration files live under <infra/> and are mounted into the infrastructure containers via <docker-compose.yml>.\n\nPrometheus scrape targets (host.docker.internal, reached via the extra_hosts gateway):\n```\napi-gateway          host.docker.internal:8080\nuser-service         host.docker.internal:8081\naccount-service      host.docker.internal:8082\ntransaction-service  host.docker.internal:8083\nnotification-service host.docker.internal:8084\n```\n\nAll targets expose metrics at <GET /actuator/prometheus>.\n\nGrafana is provisioned automatically on startup using files under <infra/grafana/provisioning/>:\n- datasources: Prometheus at http://prometheus:9090 (uid: prometheus, default)\n- dashboards: loaded from the same provisioning directory\n\nDashboards to create:\n- API Health: request rate, error rate, p99 latency per service\n- JVM Health: heap memory, GC pause time, thread count per service\n- Banking Metrics: transfer count, transfer volume, failed transfers, cache hit rate\n- Kafka Metrics: events published, events consumed, consumer lag",
+  "labels": ["observability", "monitoring", "prometheus", "grafana", "devops"],
+  "priority": "Medium",
+  "storyPoints": 5,
+  "acceptanceCriteria": [
+    {
+      "scenario": "Prometheus scrapes all backend services without errors",
+      "given": "all 5 Spring Boot services are running locally and exposing /actuator/prometheus",
+      "when": "docker compose up is executed and Prometheus starts",
+      "then": "the Prometheus targets page at http://localhost:9090/targets shows all 5 jobs in state UP"
+    },
+    {
+      "scenario": "Grafana loads Prometheus as the default datasource on startup",
+      "given": "the provisioning config exists at infra/grafana/provisioning/datasources/prometheus.yml",
+      "when": "Grafana starts and the datasource list is opened",
+      "then": "a Prometheus datasource named Prometheus is present, marked as default, and returns a healthy status"
+    },
+    {
+      "scenario": "API Health dashboard displays live request metrics",
+      "given": "at least one Spring Boot service is receiving HTTP traffic",
+      "when": "the API Health dashboard is opened in Grafana",
+      "then": "panels for request rate, error rate, and latency show data with no No data placeholder"
+    },
+    {
+      "scenario": "JVM Health dashboard reflects heap and GC metrics",
+      "given": "at least one Spring Boot service is running",
+      "when": "the JVM Health dashboard is opened in Grafana",
+      "then": "heap memory usage and GC pause panels display current JVM metrics for that service"
+    }
+  ],
+  "tasks": [
+    {
+      "summary": "Write Prometheus scrape configuration",
+      "description": "Create <infra/prometheus/prometheus.yml> with a scrape_interval of 15s and one scrape job per backend service targeting host.docker.internal on ports 8080–8084, path /actuator/prometheus."
+    },
+    {
+      "summary": "Create Grafana Prometheus datasource provisioning",
+      "description": "Create <infra/grafana/provisioning/datasources/prometheus.yml> to automatically register Prometheus (http://prometheus:9090) as the default Grafana datasource on container startup."
+    },
+    {
+      "summary": "Create Grafana dashboard provisioning config",
+      "description": "Create <infra/grafana/provisioning/dashboards/dashboards.yml> pointing to the provisioning directory so Grafana auto-loads any dashboard JSON files placed there."
+    },
+    {
+      "summary": "Build API Health dashboard",
+      "description": "Create <infra/grafana/provisioning/dashboards/api-health.json> with panels for HTTP request rate (http_server_requests_seconds_count), error rate, and p99 latency per service using the Prometheus datasource."
+    },
+    {
+      "summary": "Build JVM Health dashboard",
+      "description": "Create <infra/grafana/provisioning/dashboards/jvm-health.json> with panels for JVM heap usage (jvm_memory_used_bytes), GC pause time (jvm_gc_pause_seconds_sum), and live thread count (jvm_threads_live_threads) per service."
+    },
+    {
+      "summary": "Build Banking Metrics dashboard",
+      "description": "Create <infra/grafana/provisioning/dashboards/banking-metrics.json> with custom panels sourced from application-level Micrometer counters: transfer count, transfer volume, failed transfers, and Redis cache hit rate (cache_gets_total)."
+    },
+    {
+      "summary": "Build Kafka Metrics dashboard",
+      "description": "Create <infra/grafana/provisioning/dashboards/kafka-metrics.json> with panels for Kafka producer record send rate, consumer fetch rate, and consumer group lag using Micrometer Kafka metrics."
+    },
+    {
+      "summary": "Verify end-to-end metrics pipeline",
+      "description": "Start docker compose, hit each service's /actuator/prometheus endpoint, confirm all targets show UP in Prometheus, open each Grafana dashboard and verify panels populate with live data."
+    }
+  ]
+}
