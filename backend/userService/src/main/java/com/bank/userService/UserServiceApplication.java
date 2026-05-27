@@ -1,4 +1,4 @@
-package com.bf3.userService;
+package com.bank.userService;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
