@@ -34,7 +34,7 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
     volumes:
       - kafka-1-data:/var/lib/kafka/data
-      - ./kafka/server.properties:/opt/kafka/config/server.properties
+      - ./infra/kafka/server.properties:/opt/kafka/config/server.properties
     networks:
       - kafka-net
     restart: unless-stopped
@@ -81,9 +81,9 @@ services:
     image: prom/prometheus:v3.4.0
     hostname: prometheus
     ports:
-      - "9093:9090"
+      - "9090:9090"
     volumes:
-      #- ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
@@ -107,7 +107,7 @@ services:
       GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
       - grafana-data:/var/lib/grafana
-      #- ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
     networks:
       - observability
     depends_on:
