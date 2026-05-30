@@ -1,0 +1,41 @@
+{
+  "summary": "Add Postman collection and environment files to repository",
+  "description": "Commit and push the <docs/postman/> directory to the main branch so all team members and reviewers have access to the API testing collection.\n\nThe directory contains four files:\n- <docs/postman/banking360.postman_collection.json> — 17 requests across Auth, User, Account, Transaction, Notification, and Admin service folders with auto-populating collection variables and test scripts\n- <docs/postman/banking360-dev.postman_environment.json> — Dev environment targeting `http://localhost:8080/api`\n- <docs/postman/banking360-prod.postman_environment.json> — Prod environment targeting `https://api.banking360.com/api`\n- <docs/postman/README.md> — Import guide, recommended 10-step test flow, query param reference, and local dev prerequisites\n\nThis collection serves as the primary manual testing and acceptance validation tool for all five microservices throughout the capstone. Running requests in order exercises the full end-to-end workflow: registration, login, account creation, transfer, and notification delivery via Kafka.",
+  "labels": ["documentation", "postman", "api-testing", "devtools"],
+  "priority": "Medium",
+  "storyPoints": 1,
+  "acceptanceCriteria": [
+    {
+      "scenario": "Postman directory is present in the remote repository",
+      "given": "the docs/postman/ directory exists locally with all four files staged and committed",
+      "when": "the branch is pushed and merged into main",
+      "then": "the docs/postman/ directory and its four files are visible in the remote repository on the main branch"
+    },
+    {
+      "scenario": "Collection imports successfully into Postman",
+      "given": "the committed files are available on the main branch",
+      "when": "a developer drags all three JSON files into the Postman Import dialog",
+      "then": "the Banking 360 API collection and both Dev and Prod environments are created without import errors"
+    },
+    {
+      "scenario": "End-to-end test flow executes against local dev stack",
+      "given": "the full local stack is running via `docker compose up -d` and the Dev environment is selected in Postman",
+      "when": "a developer runs the 10-step recommended flow from Register through Mark Notification as Read",
+      "then": "all requests return the expected HTTP status codes and collection variables are auto-populated at each step"
+    }
+  ],
+  "tasks": [
+    {
+      "summary": "Stage docs/postman/ for commit",
+      "description": "Run `git add docs/postman/` to stage all four files: <docs/postman/banking360.postman_collection.json>, <docs/postman/banking360-dev.postman_environment.json>, <docs/postman/banking360-prod.postman_environment.json>, and <docs/postman/README.md>."
+    },
+    {
+      "summary": "Commit with BF3-prefixed message",
+      "description": "Create a commit following project conventions, e.g.:\n```\ndocs: BF3-<number> add Postman collection and environment files\n```"
+    },
+    {
+      "summary": "Open pull request targeting main",
+      "description": "Push the feature branch and open a pull request. Title must contain the BF3 ticket number as required by <.github/workflows/pr-checks.yml>, e.g. `docs: BF3-<number> add Postman collection and environments`."
+    }
+  ]
+}
