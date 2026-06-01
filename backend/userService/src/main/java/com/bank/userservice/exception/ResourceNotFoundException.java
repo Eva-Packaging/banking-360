@@ -1,11 +1,10 @@
 package com.bank.userservice.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import lombok.NoArgsConstructor;
 
-@ResponseStatus(HttpStatus.CONFLICT)
+// A custom exception format for 404 Resource Not Found errors.
+@NoArgsConstructor
 public class ResourceNotFoundException extends RuntimeException {
-    public ResourceNotFoundException(String message) {
-        super(message);
-    }
+    // Throws a customized 404 error with the provided message.
+    public ResourceNotFoundException(String message) { super(message); }
 }

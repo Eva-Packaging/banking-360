@@ -1,8 +1,9 @@
 package com.bank.userservice.dto;
 
 import lombok.*;
-
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -13,7 +14,7 @@ public class RegisterCustomerResponse {
         private String firstName;
         private String lastName;
         private String email;
-        private String role;
+        private Set<String> roles;
         private String status;
-        private Instant createdAt;
+        private LocalDateTime createdAt;
 }
