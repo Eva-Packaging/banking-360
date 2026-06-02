@@ -5,15 +5,17 @@ import com.bank.notification_service.model.NotificationType;
 import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
-public class NotificationResponseDTO {
+public class NotificationResponse {
 
-    private Long notificationId;
+    private UUID notificationId;
     private NotificationType type;
     private String title;
     private String message;
     private NotificationStatus status;
     private LocalDateTime createdAt;
+    private LocalDateTime readAt;
 }

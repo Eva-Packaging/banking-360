@@ -1,6 +1,6 @@
 package com.bank.notification_service.service;
 
-import com.bank.notification_service.dto.NotificationResponseDTO;
+import com.bank.notification_service.dto.NotificationResponse;
 import com.bank.notification_service.model.Notification;
 import com.bank.notification_service.model.NotificationStatus;
 import com.bank.notification_service.repository.NotificationRepository;
@@ -10,16 +10,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
 
-    public List<NotificationResponseDTO> getMyNotifications(Long customerId, boolean unreadOnly) {
+    public List<NotificationResponse> getMyNotifications(UUID customerId, boolean unreadOnly) {
         List<Notification> notifications = unreadOnly
-                ? notificationRepository
-                .findByCustomerIdAndStatus(customerId, NotificationStatus.UNREAD)
+                ? notificationRepository.findByCustomerIdAndStatus(customerId, NotificationStatus.UNREAD)
                 : notificationRepository.findByCustomerId(customerId);
 
         return notifications.stream()
@@ -27,7 +27,7 @@ public class NotificationService {
                 .toList();
     }
 
-    public NotificationResponseDTO markAsRead(Long notificationId, Long customerId){
+    public NotificationResponse markAsRead(UUID notificationId, UUID customerId){
         Notification notification = notificationRepository
                                     .findById(notificationId)
                                     .orElseThrow(() -> new ResponseStatusException(
@@ -49,14 +49,15 @@ public class NotificationService {
         return toDTO(notification);
     }
 
-    private NotificationResponseDTO toDTO(Notification notification){
-        return NotificationResponseDTO.builder()
+    private NotificationResponse toDTO(Notification notification){
+        return NotificationResponse.builder()
                 .notificationId(notification.getId())
-                .type(notification.getType())
+                .type(notification.getNotificationType())
                 .title(notification.getTitle())
                 .message(notification.getMessage())
                 .status(notification.getStatus())
                 .createdAt(notification.getCreatedAt())
+                .readAt(notification.getReadAt())
                 .build();
     }
 

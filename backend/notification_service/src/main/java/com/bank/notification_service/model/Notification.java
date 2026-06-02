@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "notifications")
@@ -13,21 +14,27 @@ import java.time.LocalDateTime;
 @Builder
 public class Notification {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "customer_id", nullable = false)
+    private UUID customerId;
+
+    @Column(name = "event_id")
+    private UUID eventId;
+
+    @Column(nullable = false, length = 150)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 500)
     private String message;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private NotificationType type;
+    @Column(nullable = false, length = 30)
+    private NotificationType notificationType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private NotificationStatus status = NotificationStatus.UNREAD;
 
     @CreationTimestamp
@@ -37,7 +44,6 @@ public class Notification {
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
-    @Column(name = "customer_id", nullable = false)
-    private Long customerId;
+
 
 }
