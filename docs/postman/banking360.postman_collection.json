@@ -1,0 +1,702 @@
+{
+  "info": {
+    "_postman_id": "b36-0000-0000-0000-banking360api",
+    "name": "Banking 360 API",
+    "description": "Complete API collection for the Banking 360 microservices platform.\n\nOrganized by service: Auth, User, Account, Transaction, Notification, Admin.\n\n**Collection variables** (overridden per environment):\n- `protocol`, `host`, `port` — individual parts of the base URL\n- `baseUrl` — e.g. `http://localhost:8080/api`\n- `jwt_token` — auto-populated by the Login request test script\n- `userId`, `accountId`, `secondAccountId`, `transactionId`, `notificationId` — auto-populated by create/list requests\n\n**Recommended flow:**\n1. Select the Dev or Prod environment\n2. Run **Login** — token is saved automatically\n3. Run requests in order; IDs are captured automatically",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    { "key": "protocol",        "value": "http",                    "type": "string" },
+    { "key": "host",            "value": "localhost",               "type": "string" },
+    { "key": "port",            "value": "8080",                    "type": "string" },
+    { "key": "baseUrl",         "value": "http://localhost:8080/api","type": "string" },
+    { "key": "jwt_token",       "value": "",                        "type": "string" },
+    { "key": "userId",          "value": "",                        "type": "string" },
+    { "key": "accountId",       "value": "",                        "type": "string" },
+    { "key": "secondAccountId", "value": "",                        "type": "string" },
+    { "key": "transactionId",   "value": "",                        "type": "string" },
+    { "key": "notificationId",  "value": "",                        "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Auth Service",
+      "description": "Register and login endpoints. No JWT required — these requests override collection-level auth with `noauth`.",
+      "item": [
+        {
+          "name": "Register Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response has userId\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"userId\");",
+                  "  pm.collectionVariables.set(\"userId\", json.userId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Devin\",\n  \"lastName\": \"Catuns\",\n  \"email\": \"devin@example.com\",\n  \"password\": \"Password123!\",\n  \"phoneNumber\": \"555-123-4567\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "`POST /auth/register` — Creates a new customer account. Returns 201 with the new user object. Saves `userId` to collection variable."
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"JWT token received and saved\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"accessToken\");",
+                  "  pm.collectionVariables.set(\"jwt_token\", json.accessToken);",
+                  "  if (json.user && json.user.userId) {",
+                  "    pm.collectionVariables.set(\"userId\", json.user.userId);",
+                  "  }",
+                  "  console.log(\"Token saved. Expires in:\", json.expiresIn, \"seconds\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"devin@example.com\",\n  \"password\": \"Password123!\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "`POST /auth/login` — Authenticates user. On success, the test script auto-saves `accessToken` to `{{jwt_token}}` and `userId` to the collection — all subsequent requests will use the token automatically."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. User Service",
+      "description": "User profile and admin user-management endpoints. Requires JWT.",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Profile has required fields\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"userId\");",
+                  "  pm.expect(json).to.have.property(\"email\");",
+                  "  pm.expect(json).to.have.property(\"role\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            },
+            "description": "`GET /users/me` — Returns the profile of the currently authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Customers (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Paginated response shape\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"content\");",
+                  "  pm.expect(json).to.have.property(\"totalElements\");",
+                  "  pm.expect(json).to.have.property(\"totalPages\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users?page=0&size=10&status=ACTIVE",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                { "key": "page",   "value": "0" },
+                { "key": "size",   "value": "10" },
+                { "key": "status", "value": "ACTIVE", "description": "ACTIVE | INACTIVE | LOCKED" }
+              ]
+            },
+            "description": "`GET /users` — **Admin only.** Returns a paginated list of all customers. Returns 403 for CUSTOMER role."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Account Service",
+      "description": "Account creation, retrieval, and balance summary. Requires JWT.",
+      "item": [
+        {
+          "name": "Create Account (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Account created — ID saved\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"accountId\");",
+                  "  pm.expect(json.status).to.eql(\"ACTIVE\");",
+                  "  pm.collectionVariables.set(\"accountId\", json.accountId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"{{userId}}\",\n  \"accountType\": \"CHECKING\",\n  \"initialBalance\": 500.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts"]
+            },
+            "description": "`POST /accounts` — **Admin only.** Creates a CHECKING or SAVINGS account for a customer. `accountType`: `CHECKING` | `SAVINGS`. Saves `accountId` on success."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Second Account (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Second account created — ID saved\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"accountId\");",
+                  "  pm.collectionVariables.set(\"secondAccountId\", json.accountId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"{{userId}}\",\n  \"accountType\": \"SAVINGS\",\n  \"initialBalance\": 1500.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts"]
+            },
+            "description": "`POST /accounts` — Creates a second (SAVINGS) account. Saves `secondAccountId` so the transfer request can reference both accounts automatically."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Accounts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Accounts array returned\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.be.an(\"array\");",
+                  "  if (json.length >= 1) pm.collectionVariables.set(\"accountId\", json[0].accountId);",
+                  "  if (json.length >= 2) pm.collectionVariables.set(\"secondAccountId\", json[1].accountId);",
+                  "  console.log(\"Accounts found:\", json.length);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/my",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "my"]
+            },
+            "description": "`GET /accounts/my` — Returns all accounts owned by the logged-in customer. Saves `accountId` and `secondAccountId` from the first two results."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Account by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Account has required fields\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"accountId\");",
+                  "  pm.expect(json).to.have.property(\"accountType\");",
+                  "  pm.expect(json).to.have.property(\"balance\");",
+                  "  pm.expect(json).to.have.property(\"status\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{accountId}}"]
+            },
+            "description": "`GET /accounts/{accountId}` — Returns a single account by ID. Uses `{{accountId}}` collection variable."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Account Summary (Dashboard)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Summary has totalBalance and accounts\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"totalBalance\");",
+                  "  pm.expect(json).to.have.property(\"accounts\");",
+                  "  pm.expect(json.accounts).to.be.an(\"array\");",
+                  "  console.log(\"Cache hit:\", json.cached, \"| Total:\", json.totalBalance);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "summary"]
+            },
+            "description": "`GET /accounts/summary` — Aggregated balance view used by the dashboard. Redis-cached; check `cached: true/false` in the response to verify cache behaviour."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Transaction Service",
+      "description": "Fund transfers and transaction history. Requires JWT.",
+      "item": [
+        {
+          "name": "Transfer Between Own Accounts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Transfer COMPLETED — ID saved\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.status).to.eql(\"COMPLETED\");",
+                  "  pm.expect(json).to.have.property(\"transactionId\");",
+                  "  pm.collectionVariables.set(\"transactionId\", json.transactionId);",
+                  "  console.log(\"Transaction:\", json.transactionId, \"Amount:\", json.amount);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountId\": \"{{accountId}}\",\n  \"toAccountId\": \"{{secondAccountId}}\",\n  \"amount\": 100.00,\n  \"description\": \"Move money to savings\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "transfer"]
+            },
+            "description": "`POST /transactions/transfer` — Transfers money between the customer's own accounts. On success: persists transaction + DEBIT/CREDIT entries, updates balances via Account Service, evicts Redis cache, publishes `TRANSFER_COMPLETED` Kafka event. Saves `transactionId`."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Transaction History",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Paginated transactions returned\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"content\");",
+                  "  pm.expect(json).to.have.property(\"totalElements\");",
+                  "  if (json.content.length > 0) {",
+                  "    pm.collectionVariables.set(\"transactionId\", json.content[0].transactionId);",
+                  "  }",
+                  "  console.log(\"Total transactions:\", json.totalElements);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/my?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "my"],
+              "query": [
+                { "key": "page",   "value": "0" },
+                { "key": "size",   "value": "10" },
+                { "key": "type",   "value": "TRANSFER_OUT", "disabled": true, "description": "TRANSFER_OUT | TRANSFER_IN" },
+                { "key": "status", "value": "COMPLETED",    "disabled": true, "description": "COMPLETED | FAILED | PENDING" }
+              ]
+            },
+            "description": "`GET /transactions/my` — Paginated transaction history for the logged-in customer. Enable the `type` or `status` query params to filter results."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Transactions by Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Paginated transactions returned\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"content\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/account/{{accountId}}?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "account", "{{accountId}}"],
+              "query": [
+                { "key": "page",   "value": "0" },
+                { "key": "size",   "value": "10" },
+                { "key": "status", "value": "COMPLETED", "disabled": true }
+              ]
+            },
+            "description": "`GET /transactions/account/{accountId}` — Returns transactions for a specific account. Returns 403 if the account does not belong to the requesting customer."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Transaction by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Transaction detail fields present\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"transactionId\");",
+                  "  pm.expect(json).to.have.property(\"amount\");",
+                  "  pm.expect(json).to.have.property(\"status\");",
+                  "  pm.expect(json).to.have.property(\"createdAt\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/{{transactionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "{{transactionId}}"]
+            },
+            "description": "`GET /transactions/{transactionId}` — Returns full details of a single transaction by ID."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Notification Service",
+      "description": "In-app notification retrieval and read-status management. Driven by Kafka TRANSFER_COMPLETED events. Requires JWT.",
+      "item": [
+        {
+          "name": "Get My Notifications",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Notifications array returned\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.be.an(\"array\");",
+                  "  if (json.length > 0) {",
+                  "    pm.collectionVariables.set(\"notificationId\", json[0].notificationId);",
+                  "    console.log(\"First notification status:\", json[0].status);",
+                  "  } else {",
+                  "    console.warn(\"No notifications found — trigger a transfer first\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/my?unreadOnly=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "my"],
+              "query": [
+                { "key": "unreadOnly", "value": "true", "description": "true | false" }
+              ]
+            },
+            "description": "`GET /notifications/my` — Returns in-app notifications for the logged-in customer. Set `unreadOnly=false` to include already-read notifications. Saves `notificationId` from the first result."
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Notification as Read",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Notification marked READ\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.status).to.eql(\"READ\");",
+                  "  pm.expect(json).to.have.property(\"readAt\");",
+                  "  console.log(\"Read at:\", json.readAt);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/{{notificationId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "{{notificationId}}", "read"]
+            },
+            "description": "`PATCH /notifications/{notificationId}/read` — Marks a single notification as READ. Returns 404 if the notification does not exist or belongs to another user."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Admin",
+      "description": "Admin-only endpoints — all return 403 for CUSTOMER role.",
+      "item": [
+        {
+          "name": "Get All Accounts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Paginated accounts returned\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"content\");",
+                  "  pm.expect(json).to.have.property(\"totalElements\");",
+                  "  console.log(\"Total accounts:\", json.totalElements);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/accounts?page=0&size=10&status=ACTIVE",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts"],
+              "query": [
+                { "key": "page",        "value": "0" },
+                { "key": "size",        "value": "10" },
+                { "key": "status",      "value": "ACTIVE",   "description": "ACTIVE | LOCKED | INACTIVE" },
+                { "key": "customerId",  "value": "",          "disabled": true },
+                { "key": "accountType", "value": "CHECKING",  "disabled": true, "description": "CHECKING | SAVINGS" }
+              ]
+            },
+            "description": "`GET /accounts` — **Admin only.** Returns all accounts across all customers with optional filters."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Account Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Account status updated\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"accountId\");",
+                  "  pm.expect(json).to.have.property(\"status\");",
+                  "  pm.expect(json).to.have.property(\"updatedAt\");",
+                  "  console.log(\"New status:\", json.status);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"LOCKED\",\n  \"reason\": \"Suspicious activity detected\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{accountId}}", "status"]
+            },
+            "description": "`PATCH /accounts/{accountId}/status` — **Admin only.** Sets account status to `ACTIVE`, `LOCKED`, or `INACTIVE`. Change the `status` field in the body as needed."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Transactions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Paginated transactions returned\", () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property(\"content\");",
+                  "  pm.expect(json).to.have.property(\"totalElements\");",
+                  "  console.log(\"Total transactions:\", json.totalElements);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/admin?page=0&size=10&status=COMPLETED",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "admin"],
+              "query": [
+                { "key": "page",       "value": "0" },
+                { "key": "size",       "value": "10" },
+                { "key": "status",     "value": "COMPLETED", "description": "COMPLETED | FAILED | PENDING" },
+                { "key": "customerId", "value": "",          "disabled": true }
+              ]
+            },
+            "description": "`GET /transactions/admin` — **Admin only.** Returns all transactions across all customers. Returns 403 for CUSTOMER role."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
