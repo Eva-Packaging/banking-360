@@ -35,8 +35,7 @@ public class UserController {
                                 .status(user.getStatus())
                                 .createdAt(user.getCreatedAt())
                                 .build()
-                        )
-                        .orElseThrow(() -> new RuntimeException("User not found"))
+                        ).orElseThrow(() -> new RuntimeException("User not found"))
         );
     }
 }
