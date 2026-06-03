@@ -24,7 +24,7 @@ public class UserController {
                 userRepository.findByEmail(jwt.extractEmail(
                         authHeader.replaceFirst("^\\S+\\s+", "")))
                         .map(user -> RegisterCustomerResponse.builder()
-                                .userId(user.getId().toString())
+                                .userId(user.getId())
                                 .firstName(user.getFirstName())
                                 .lastName(user.getLastName())
                                 .email(user.getEmail())
