@@ -1,4 +1,4 @@
-package com.bf3.userService;
+package com.bank.userservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
