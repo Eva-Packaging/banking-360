@@ -3,6 +3,7 @@ package com.bank.userservice.controller;
 import com.bank.userservice.dto.LoginRequest;
 import com.bank.userservice.dto.LoginResponse;
 import com.bank.userservice.dto.RegisterCustomerRequest;
+import com.bank.userservice.dto.RegisterCustomerResponse;
 import com.bank.userservice.service.AuthService;
 import com.bank.userservice.service.UserService;
 import jakarta.validation.Valid;
@@ -19,7 +20,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterCustomerRequest> postRegister(@Valid @RequestBody RegisterCustomerRequest request) {
+    public ResponseEntity<RegisterCustomerResponse> postRegister(@Valid @RequestBody RegisterCustomerRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(request));
     }
     @PostMapping("/login")
