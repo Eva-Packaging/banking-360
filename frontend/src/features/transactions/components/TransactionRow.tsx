@@ -1,13 +1,13 @@
-import type { Transaction } from '../../../types/transaction';
+import type { TransactionHistoryItem } from '../../../types/transaction';
 
 interface Props {
-    transaction: Transaction;
+    transaction: TransactionHistoryItem;
 }
 
 export default function TransactionRow({ transaction }: Props) {
-    const { date, description, amount, type, status } = transaction;
+    const { createdAt, description, amount, transactionType, status } = transaction;
 
-    const formattedDate = new Date(date).toLocaleDateString('en-US', {
+    const formattedDate = new Date(createdAt).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -18,8 +18,8 @@ export default function TransactionRow({ transaction }: Props) {
         currency: 'USD',
     }).format(amount);
 
-    const amountClass = type === 'CREDIT' ? 'text-green-600' : 'text-red-600';
-    const amountPrefix = type === 'CREDIT' ? '+' : '-';
+    const amountClass = transactionType === 'CREDIT' ? 'text-green-600' : 'text-red-600';
+    const amountPrefix = transactionType === 'CREDIT' ? '+' : '-';
 
     const statusClass: Record<string, string> = {
         COMPLETED: 'bg-green-100 text-green-800',

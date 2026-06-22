@@ -1,10 +1,10 @@
 import axiosClient from './axiosClient';
-import type { Transaction, PageResponse } from '../types/transaction';
+import type { TransactionHistoryItem, PagedTransactionResponse } from '../types/transaction';
 
 export const getMyTransactions = (
     page: number = 0,
     size: number = 10
-): Promise<PageResponse<Transaction>> =>
+): Promise<PagedTransactionResponse> =>
     axiosClient
-        .get<PageResponse<Transaction>>('/transactions/my', { params: { page, size } })
+        .get<PagedTransactionResponse>('/transactions/my', { params: { page, size } })
         .then((res) => res.data);

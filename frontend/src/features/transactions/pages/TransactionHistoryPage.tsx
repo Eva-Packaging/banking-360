@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import type { Transaction, PageResponse } from '../../../types/transaction';
+import type { TransactionHistoryItem, PagedTransactionResponse } from '../../../types/transaction';
 import { getMyTransactions } from '../../../api/transactionClient';
 import TransactionRow from '../components/TransactionRow';
 import PaginationControls from '../components/PaginationControls';
 
 export default function TransactionHistoryPage() {
-    const [data, setData] = useState<PageResponse<Transaction> | null>(null);
+    const [data, setData] = useState<PagedTransactionResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(0);
@@ -48,8 +48,8 @@ export default function TransactionHistoryPage() {
                         </tr>
                         </thead>
                         <tbody>
-                        {data.content.map((transaction) => (
-                            <TransactionRow key={transaction.id} transaction={transaction} />
+                        {data.content.map((transaction: TransactionHistoryItem) => (
+                            <TransactionRow key={transaction.transactionId} transaction={transaction} />
                         ))}
                         </tbody>
                     </table>
