@@ -14,6 +14,13 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.bank.transactionservice.exception.ForbiddenAccessException;
+import com.bank.transactionservice.dto.PagedTransactionResponse;
+import com.bank.transactionservice.dto.TransactionHistoryResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TransactionService {
@@ -107,5 +114,39 @@ public class TransactionService {
                 "COMPLETED",
                 "Transfer completed successfully",
                 savedTransaction.getCreatedAt());
+    }
+    public PagedTransactionResponse getMyTransactions(
+            UUID customerId, int page, int size, String type, String status) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Transaction> transactionPage;
+        if (type != null || status != null) {
+            transactionPage = transactionRepository
+                    .findByCustomerIdWithFilters(customerId, type, status, pageable);
+        } else {
+            transactionPage = transactionRepository
+                    .findByCustomerId(customerId, pageable);
+        }
+
+        List<TransactionHistoryResponse> content = transactionPage.getContent()
+                .stream()
+                .map(t -> new TransactionHistoryResponse(
+                        t.getId(),
+                        null,
+                        null,
+                        t.getAmount(),
+                        t.getTransactionType(),
+                        t.getStatus(),
+                        t.getDescription(),
+                        t.getCreatedAt()))
+                .collect(Collectors.toList());
+
+        return new PagedTransactionResponse(
+                content,
+                transactionPage.getNumber(),
+                transactionPage.getSize(),
+                transactionPage.getTotalElements(),
+                transactionPage.getTotalPages());
     }
 }

@@ -1,5 +1,6 @@
 package com.bank.transactionservice.controller;
 
+import com.bank.transactionservice.dto.PagedTransactionResponse;
 import com.bank.transactionservice.dto.TransactionResponse;
 import com.bank.transactionservice.dto.TransferRequest;
 import com.bank.transactionservice.service.TransactionService;
@@ -7,10 +8,12 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -29,5 +32,17 @@ public class TransactionController {
             @Valid @RequestBody TransferRequest request) {
         TransactionResponse response = transactionService.transfer(customerId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<PagedTransactionResponse> getMyTransactions(
+            @RequestHeader("X-User-Id") UUID customerId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String status) {
+        PagedTransactionResponse response = transactionService
+                .getMyTransactions(customerId, page, size, type, status);
+        return ResponseEntity.ok(response);
     }
 }
